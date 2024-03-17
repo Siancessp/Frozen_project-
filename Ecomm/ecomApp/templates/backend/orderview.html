@@ -1,0 +1,246 @@
+ {% include 'backend/header.html' %}
+   {% include 'backend/sidebar.html' %}
+
+
+ {% load static %}
+ <style>
+    .success-message {
+        color: green;
+        font-weight: bold;
+        border: 1px solid green;
+        padding: 10px;
+        margin: 10px 0;
+        background-color: #dff0d8; /* Optional background color */
+    }
+</style>
+
+ <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Order Details</h1>
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <p {% if message.tags %} class="success-message"{% endif %}>{{ message }}</p>
+        {% endfor %}
+    </ul>
+{% endif %}
+<!--    <p class="success-message" >Status saved successfully!</p>-->
+
+          </div>
+
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">Order Details</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <!-- left column -->
+          <div class="col-md-12">
+            <!-- general form elements -->
+
+
+            <!-- Input addon -->
+            <div class="card card-info">
+              <div class="card-header">
+                <h3 class="card-title">Order Details for an Customer</h3>
+              </div>
+              <div class="card-body">
+<!--                <div class="input-group mb-3">-->
+<!--                  <div class="input-group-prepend">-->
+<!--                    <span class="input-group-text">@</span>-->
+<!--                  </div>-->
+<!--                  <input type="text" class="form-control" placeholder="Username">-->
+<!--                </div>-->
+{%if sel_ordform %}
+                <div class="row">
+                  <div class="col-lg-6">
+                   <h5 class="mt-4 mb-2"><b>Order Id</b></h5>
+                    <div class="input-group">
+                      <p class="form-control">{{sel_ordform.order_id}}</p>
+                    </div>
+                    <!-- /input-group -->
+                  </div>
+
+                  <!-- /.col-lg-6 -->
+                  <div class="col-lg-6">
+                   <h5 class="mt-4 mb-2"><b>Customer Name</b></h5>
+                    <div class="input-group">
+                     <p class="form-control">{{sel_ordform.user_id.full_name}}</p>
+                    </div>
+                  </div>
+                </div>
+
+              <div class="row">
+                  <div class="col-lg-6">
+                   <h5 class="mt-4 mb-2"><b>Category Id</b></h5>
+                    <div class="input-group">
+                          <p class="form-control">{{sel_ordform.cat_id}}</p>
+                    </div>
+                    <!-- /input-group -->
+                  </div>
+
+                  <!-- /.col-lg-6 -->
+                  <div class="col-lg-6">
+                   <h5 class="mt-4 mb-2"><b>Product Id</b></h5>
+                    <div class="input-group">
+                        <p class="form-control">{{sel_ordform.product_id}}</p>
+                    </div>
+                  </div>
+                </div>
+
+              <div class="row">
+                  <div class="col-lg-6">
+                   <h5 class="mt-4 mb-2"><b>Payment Id</b></h5>
+                    <div class="input-group">
+                        <p class="form-control">{{sel_ordform.payment_id}}</p>
+                    </div>
+                    <!-- /input-group -->
+                  </div>
+
+                  <!-- /.col-lg-6 -->
+                  <div class="col-lg-6">
+                   <h5 class="mt-4 mb-2"><b>Coupon Code</b></h5>
+                    <div class="input-group">
+                        <p class="form-control">{{sel_ordform.couponcode}}</p>
+                    </div>
+                  </div>
+                </div>
+
+              <div class="row">
+                  <div class="col-lg-6">
+                   <h5 class="mt-4 mb-2"><b>Amount</b></h5>
+                    <div class="input-group">
+                       <p class="form-control">{{sel_ordform.amount}}</p>
+                    </div>
+                    <!-- /input-group -->
+                  </div>
+
+                  <!-- /.col-lg-6 -->
+                 <div class="col-lg-6">
+    <h5 class="mt-4 mb-2"><b>Status</b></h5>
+
+    <form method="post" action="{% url 'update_status' sel_ordform.id %}">
+        {% csrf_token %}
+        <div class="input-group">
+            <select  class="form-control" name="status" id="status">
+                <option class="btn btn-primary"value="1" {% if sel_ordform.status == 1 %}selected{% endif %}>Pending</option>
+                <option class="btn btn-primary"value="2" {% if sel_ordform.status == 2 %}selected{% endif %}>Confirm</option>
+                <option class="btn btn-primary"value="3" {% if sel_ordform.status == 3 %}selected{% endif %}>Dispatch</option>
+                <option class="btn btn-primary"value="4" {% if sel_ordform.status == 4 %}selected{% endif %}>Delivered</option>
+                <option class="btn btn-primary"value="5" {% if sel_ordform.status == 5 %}selected{% endif %}>Cancel</option>
+                <option class="btn btn-primary"value="6" {% if sel_ordform.status == 6 %}selected{% endif %}>Return Request</option>
+                <option class="btn btn-primary"value="7" {% if sel_ordform.status == 7 %}selected{% endif %}>Return Accepted</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+    </form>
+</div>
+
+
+                <div class="px-5 py-4 row-4">
+                    <a href="{%  url 'orderapp' %}" class="btn btn-danger btn-lg">Back</a>
+                </div>
+  {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% include 'backend/footer.html' %}
+
+  <!-- /.navbar -->
