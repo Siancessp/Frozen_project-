@@ -125,7 +125,7 @@ DATABASES = {
         'NAME': 'testdb2',
         'ENFORCE_SCHEMA': False,  # Enforce schema validation
         'CLIENT': {
-            'host': 'mongodb+srv://user:user@cluster0.a7xiyou.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
+            'host': 'mongodb+srv://user:user@cluster0.prxlwvh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
             'port': 27017,  # Default MongoDB port
             'username': 'user',
             'password': 'user'
