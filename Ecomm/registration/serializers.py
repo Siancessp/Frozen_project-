@@ -4,7 +4,13 @@ from ecomApp.models import CustomUser
 # class RegistrationSerializer(serializers.Serializer):
 #     phone_number = serializers.CharField()
 #     otp = serializers.CharField()
-class UserSerializer(serializers.ModelSerializer):
+class CustomUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(min_length=8, write_only=True)
+
     class Meta:
         model = CustomUser
-        fields = ['phone_number', 'password']
+        fields = ('phone_number',  'password')
+
+    def create(self, validated_data):
+        user = CustomUser.objects.create_user(**validated_data)
+        return user

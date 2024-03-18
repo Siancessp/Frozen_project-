@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
+import os
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,7 +30,7 @@ SECRET_KEY = 'django-insecure-%lv*y_$*4n9v#m(#ggyvw*6hx%z*35bugvs4srd2k4ps0tezf(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -50,8 +53,22 @@ INSTALLED_APPS = [
     'advertisement_management',
     'order',
     'rest_framework',
+    'rest_framework.authtoken',
+    'corsheaders',
 
 ]
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
+AUTH_USER_MODEL = 'ecomApp.CustomUser'
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -64,6 +81,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'Ecomm.urls'
+CORS_ORIGIN_ALLOW_ALL = True
 
 TEMPLATES = [
     {
@@ -87,12 +105,12 @@ WSGI_APPLICATION = 'Ecomm.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 import djongo
 
 # DATABASES = {
@@ -101,6 +119,20 @@ import djongo
 #         'NAME': 'test_mongo',  # Specify your database name
 #     }
 # }
+DATABASES = {
+    'default': {
+        'ENGINE': 'djongo',
+        'NAME': 'testdb2',
+        'ENFORCE_SCHEMA': False,  # Enforce schema validation
+        'CLIENT': {
+            'host': 'mongodb+srv://user:user@cluster0.a7xiyou.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
+            'port': 27017,  # Default MongoDB port
+            'username': 'user',
+            'password': 'user'
+
+        },
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

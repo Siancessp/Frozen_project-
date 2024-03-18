@@ -17,13 +17,13 @@ from django.shortcuts import render
 from django.core.mail import send_mail
 from django.conf import settings
 import random
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
 from django.utils import timezone
 
 def send_otp(request):
     if request.method == 'POST':
         email = request.POST.get('email')
-        user = User.objects.filter(email=email).first()  # Use User model
+        user = CustomUser.objects.filter(email=email).first()  # Use User model
         if user and user.is_staff:
             # Generate OTP
             otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
@@ -50,7 +50,7 @@ def send_otp(request):
 def verify_email(request):
     if request.method == 'POST':
         email = request.POST.get('email')
-        user = User.objects.filter(email=email, is_staff=True).first()
+        user = CustomUser.objects.filter(email=email, is_staff=True).first()
         if user:
             # Generate OTP
             otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
@@ -87,7 +87,7 @@ def verify_otp(request):
 
     if request.method == 'POST':
         otp_entered = request.POST.get('otp')
-        user = User.objects.filter(email=email).first()
+        user = CustomUser.objects.filter(email=email).first()
         if user and user.is_staff:
             otp_obj = Otp.objects.filter(user=user).first()
             if otp_obj:
@@ -123,7 +123,7 @@ def change_password(request):
             messages.error(request, "Passwords do not match.")
             return render(request, 'backend/change_password.html')
 
-        user = User.objects.filter(email=email).first()
+        user = CustomUser.objects.filter(email=email).first()
         if user:
             user.set_password(new_password)
             user.save()
@@ -210,7 +210,7 @@ def deactivate_catagory(request, catagory_id):
 # Create your views here.
 @login_required(login_url='backend/login')
 def customerlist(request):
-    productapp=User.objects.all()
+    productapp=CustomUser.objects.all()
 
     context={
         'banform': productapp
@@ -218,13 +218,13 @@ def customerlist(request):
     return render(request,'backend/customerlist.html',context)
 @login_required(login_url='backend/login')
 def activate_customer(request, id):
-    banner = get_object_or_404(User, id=id)
+    banner = get_object_or_404(CustomUser, id=id)
     banner.status = True
     banner.save()
     return redirect('customerlist')  # Redirect to your banner list view
 @login_required(login_url='backend/login')
 def deactivate_customer(request, id):
-    banner = get_object_or_404(User, id=id)
+    banner = get_object_or_404(CustomUser, id=id)
     banner.status = False
     banner.save()
     return redirect('customerlist')  # Redirect to your banner list view

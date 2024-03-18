@@ -5,18 +5,17 @@ from django.utils import timezone
 from decimal import Decimal
 import random
 from django.contrib.auth.models import User
+from django.conf import settings
 class CustomUserManager(BaseUserManager):
-    def create_user(self, phone_number, password=None, **extra_fields):
+    def create_user(self, phone_number, password=None, name=None, referral_code=None, **extra_fields):
         if not phone_number:
-            raise ValueError('The phone_number must be set')
-
-        phone_number = self.normalize_phone_number(phone_number)
-        user = self.model(phone_number=phone_number, **extra_fields)
+            raise ValueError('The phone number field must be set')
+        user = self.model(phone_number=phone_number, name=name, referral_code=referral_code, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, phone_number,  password=None, **extra_fields):
+    def create_superuser(self, phone_number, password=None, name=None, referral_code=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -25,34 +24,49 @@ class CustomUserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        return self.create_user(phone_number, phone_number, password, **extra_fields)
+        return self.create_user(phone_number, password, name, referral_code, **extra_fields)
 
-class CustomUser(AbstractBaseUser):
-    id = models.AutoField(primary_key=True)
-    otp = models.CharField(max_length=6, blank=True)
-    phone_number = models.CharField(max_length=16,unique=True)
-    password = models.CharField(max_length=128)  # No need to store password directly
-    status = models.BooleanField(default=False)
-    name = models.CharField(max_length=50, blank=True)
-    address = models.TextField(blank=True)
-    # gender=models.BooleanField(blank=True)
-    profile_photo=models.ImageField(upload_to='images/', null=True, blank=True)
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    id= models.AutoField(primary_key=True)
+    phone_number = models.CharField(max_length=15, unique=True)  # You can adjust the max_length as needed.
+    name = models.CharField(max_length=255)
+    bio=models.CharField(max_length=255,default='')
+    profile_photo=models.ImageField(upload_to='videos/', null=True, blank=True)
+    referral_code = models.CharField(max_length=10, blank=True, null=True)
+    # password = models.CharField(max_length=128)  # Store the password as a hash.
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-
+    created_date=models.DateField(auto_now_add=True)
+    blocked_users = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='users_blocked_by')
+    status = models.IntegerField(default=1)
+    email = models.EmailField()
+    # referral_link = models.CharField(max_length=255, blank=True, null=True, unique=True)
+    # slug = models.CharField(max_length=15, blank=True,unique=True, null=True)
     objects = CustomUserManager()
-
+    # total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    level = models.PositiveIntegerField(default=1)
     USERNAME_FIELD = 'phone_number'
-    REQUIRED_FIELDS = ['phone_number']
-
+    REQUIRED_FIELDS = []
     def __str__(self):
-        return self.phone_number
+        return f"{self.id}"
+
+
+    #
+    #
+    #     super(CustomUser, self).save(*args, **kwargs)
+    #     super().save(*args, **kwargs)
+
+    def has_perm(self, perm, obj=None):
+        return True  # Custom implementation if needed
+
+    def has_module_perms(self, app_label):
+        return True  # Custom implementation if needed
 
     class Meta:
         ordering = ['phone_number']  # Adjust ordering field
 
 class Otp(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True)
     email_verified = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, blank=True)
     otp_created_at = models.DateTimeField(null=True, blank=True)
