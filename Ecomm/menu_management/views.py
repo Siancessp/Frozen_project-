@@ -17,6 +17,7 @@ def item_list(request):
 def add_item(request):
     if request.method == "POST":
         title=request.POST.get('title')
+        weight_units=request.POST.get('weight_units')
         description=request.POST.get('description')
         item_photo = request.FILES.get('item_photo')
         item_quantity = request.POST.get('item_quantity')
@@ -34,6 +35,7 @@ def add_item(request):
         # Create the item object
         item = Item.objects.create(
             title=title,
+            item_measurement=weight_units,
             description=description,
             item_photo=item_photo,
             item_quantity=item_quantity,
@@ -112,6 +114,8 @@ def update_item(request, item_id):
         if item_photo:
             edit_item.item_photo = item_photo
         edit_item.title = request.POST.get('title')
+        edit_item.item_measurement = request.POST.get('item_measurement')
+
         edit_item.description = request.POST.get('description')
         edit_item.item_quantity = request.POST.get('item_quantity')
         edit_item.item_old_price = request.POST.get('item_old_price')
@@ -151,7 +155,7 @@ class DealOfTheDayAPIView(APIView):
 
     def get(self, request):
         items = Item.objects.all()
-        items = [item for item in items if item.deal_of_the_day]
+        items = [item for item in items if item.deal_of_the_day and item.status]
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
 
@@ -160,7 +164,7 @@ class RecommendedAPIView(APIView):
 
     def get(self, request):
         items = Item.objects.all()
-        items = [item for item in items if item.recommended]
+        items = [item for item in items if item.recommended and item.status]
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
 
@@ -169,7 +173,7 @@ class MostPopularAPIView(APIView):
 
     def get(self, request):
         items = Item.objects.all()
-        items = [item for item in items if item.most_popular]
+        items = [item for item in items if item.most_popular and item.status]
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
 
@@ -178,7 +182,7 @@ class AllProduct(APIView):
 
     def get(self, request):
         items = Item.objects.all()
-        items = [item for item in items]
+        items = [item for item in items if item.status]
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
 from django.http import Http404
@@ -206,25 +210,12 @@ class CategoryFetch(APIView):
     def get(self, request):
         try:
             # Fetch all categories
-            categories = Catagory.objects.all()
-            category_data = []
+            categories = Catagory.objects.filter( status=True)
 
-            # Iterate through each category
-            for category in categories:
-                # Serialize the category
-                category_serializer = CategorySerializer(category)
+            # Serialize the categories
+            category_serializer = CategorySerializer(categories, many=True)
 
-                # Fetch items associated with the category
-
-
-
-                # Append category data along with associated items to the list
-                category_data.append({
-                    'category': category_serializer.data,
-
-                })
-
-            return Response(category_data)
+            return Response(category_serializer.data)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -233,35 +224,21 @@ class CategoryfiveFetch(APIView):
 
     def get(self, request):
         try:
-            # Fetch the first 5 categories
-            categories = Catagory.objects.all()[:5]  # Slice the queryset to get only the first 5 categories
-            category_data = []
+            # Fetch all categories
+            categories = Catagory.objects.filter(status=True)[:5]
 
-            # Iterate through each category
-            for category in categories:
-                # Serialize the category
-                category_serializer = CategorySerializer(category)
+            # Serialize the categories
+            category_serializer = CategorySerializer(categories, many=True)
 
-                # Fetch items associated with the category
-                # Add your logic here to fetch associated items if needed
-
-                # Append category data along with associated items to the list
-                category_data.append({
-                    'category': category_serializer.data,
-                    # Add associated items data here if needed
-                })
-
-            return Response(category_data)
+            return Response(category_serializer.data)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 
 class DealOfTheDayfiveAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        items = Item.objects.filter(deal_of_the_day=True)[:5]  # Fetch only the first five items
+        items = Item.objects.filter(deal_of_the_day=True, status=True)[:5]  # Fetch only the first five items
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
 
@@ -269,7 +246,7 @@ class RecommendedfiveAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        items = Item.objects.filter(recommended=True)[:5]  # Fetch only the first five items
+        items = Item.objects.filter(recommended=True , status=True)[:5]  # Fetch only the first five items
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
 
@@ -277,7 +254,7 @@ class MostPopularfiveAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        items = Item.objects.filter(most_popular=True)[:5]  # Fetch only the first five items
+        items = Item.objects.filter(most_popular=True , status=True)[:5]  # Fetch only the first five items
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
 
@@ -285,6 +262,6 @@ class AllfiveProduct(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        items = Item.objects.all()[:5]  # Fetch only the first five items
+        items = Item.objects.filter(status=True)[:5]  # Fetch only the first five items
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
