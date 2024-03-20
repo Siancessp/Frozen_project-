@@ -23,6 +23,12 @@ urlpatterns = [
     path('api/category/product-all/', CategoryAPIView.as_view(), name=''),
     path('api/categories/', CategoryFetch.as_view(), name=''),
 
+    path('api/five/categories/', CategoryfiveFetch.as_view(), name=''),
+    path('api/deal_of_the_day_five/', DealOfTheDayfiveAPIView.as_view(), name='deal_of_the_day_five'),
+    path('api/recommended_five/', RecommendedfiveAPIView.as_view(), name='recommended_five'),
+    path('api/most_popular_five/', MostPopularfiveAPIView.as_view(), name='most_popular_five'),
+    path('api/all_five_product/', AllfiveProduct.as_view(), name='all_five_product'),
+
 ]
 
 
