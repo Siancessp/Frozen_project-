@@ -16,9 +16,9 @@ urlpatterns = [
     path('backend/recommended/', recommended, name='recommended'),
     path('backend/most_popular/', most_popular, name='most_popular'),
 
-    path('api/deal-of-the-day/', DealOfTheDayAPIView.as_view(), name='deal_of_the_day'),
-    path('api/recommended/', RecommendedAPIView.as_view(), name='recommended'),
-    path('api/most-popular/', MostPopularAPIView.as_view(), name='most_popular'),
+    path('api/deal-of-the-day/', DealOfTheDayAPIView.as_view(), name=''),
+    path('api/recommended/', RecommendedAPIView.as_view(), name=''),
+    path('api/most-popular/', MostPopularAPIView.as_view(), name=''),
     path('api/product-all/', AllProduct.as_view(), name=''),
     path('api/category/product-all/', CategoryAPIView.as_view(), name=''),
     path('api/categories/', CategoryFetch.as_view(), name=''),
