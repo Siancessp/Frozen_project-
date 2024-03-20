@@ -7,6 +7,7 @@ class Item(models.Model):
     description=models.CharField(max_length=1000)
     item_photo = models.ImageField(upload_to='item_photos/')
     item_quantity = models.PositiveIntegerField()
+    item_measurement=models.CharField(max_length=10,null=True)
     item_old_price = models.FloatField()
     discount = models.IntegerField()
     item_new_price = models.FloatField()
