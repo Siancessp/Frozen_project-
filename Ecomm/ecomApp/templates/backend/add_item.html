@@ -102,6 +102,18 @@
                                     <input type="number" id="item_new_price" name="item_new_price" required class="form-control" readonly>
                                 </div>
                             </div>
+                       <div class="mt-4">
+                                                               <label for="item_quantity">Item Measurement(eg. G/Kg):</label>
+
+    <select required name="weight_units">
+        <option value="" disabled selected>Select One</option>
+        <option value="kg" class="form-control">kg</option>
+        <option value="gm" class="form-control">gm</option>
+        <option value="packet" class="form-control">packet</option>
+    </select>
+
+</div>
+
                             <div class="mt-4">
                                 <button type="submit" class="btn btn-primary">Add Item</button>
                                 <a href="{% url 'item_list' %}" class="btn btn-danger">Back</a>
