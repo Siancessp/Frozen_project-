@@ -91,6 +91,16 @@
                                     <input type="number" id="item_new_price"  value="{{ item.item_new_price }}" name="item_new_price" required class="form-control" readonly>
                                 </div>
                             </div>
+                        <div class="mt-4">
+    <label for="item_quantity">Item Units(eg. G/Kg):</label>
+    <select required name="item_measurement" id="weight_units">
+        <option value="" {% if item.item_measurement == null %} selected {% endif %} disabled>Select One</option>
+        <option value="kg" class="form-control" {% if item.item_measurement == 'kg' %} selected {% endif %}>kg</option>
+        <option value="gm" class="form-control" {% if item.item_measurement == 'gm' %} selected {% endif %}>gm</option>
+        <option value="packet" class="form-control" {% if item.item_measurement == 'packet' %} selected {% endif %}>packet</option>
+    </select>
+</div>
+
                             <div class="mt-4">
                                 <button type="submit" class="btn btn-primary">Update Item</button>
                                 <a href="{% url 'item_list' %}" class="btn btn-danger">Back</a>
