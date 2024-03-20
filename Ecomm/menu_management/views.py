@@ -187,6 +187,8 @@ class AllProduct(APIView):
         return Response(serializer.data)
 from django.http import Http404
 from rest_framework import status
+
+
 class CategoryAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -195,8 +197,12 @@ class CategoryAPIView(APIView):
         category_id = request.query_params.get('category_id')
 
         try:
-            # Fetch items for the specified category ID
+            # Get all items for the specified category ID
             items = Item.objects.filter(category__id=category_id)
+
+            # Filter items where status is True using list comprehension
+            items = [item for item in items if item.status]
+
             serializer = ItemSerializer(items, many=True)
             return Response(serializer.data)
         except Item.DoesNotExist:
@@ -204,28 +210,32 @@ class CategoryAPIView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 class CategoryFetch(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
             # Fetch all categories
-            categories = Catagory.objects.filter( status=True)
+            categories = Catagory.objects.all()
 
-            # Serialize the categories
+            # Use list comprehension to filter categories based on status
+            categories = [category for category in categories if category.status]
+
+            # Serialize the filtered categories
             category_serializer = CategorySerializer(categories, many=True)
 
             return Response(category_serializer.data)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 class CategoryfiveFetch(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
             # Fetch all categories
-            categories = Catagory.objects.filter(status=True)[:5]
+            categories = Catagory.objects.all()
+            categories = [category for category in categories if category.status][:4]
 
             # Serialize the categories
             category_serializer = CategorySerializer(categories, many=True)
@@ -238,7 +248,8 @@ class DealOfTheDayfiveAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        items = Item.objects.filter(deal_of_the_day=True, status=True)[:5]  # Fetch only the first five items
+        items = Item.objects.all()
+        items = [item for item in items if item.deal_of_the_day and item.status][:4]
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
 
@@ -246,7 +257,8 @@ class RecommendedfiveAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        items = Item.objects.filter(recommended=True , status=True)[:5]  # Fetch only the first five items
+        items = Item.objects.all()
+        items = [item for item in items if item.recommended and item.status][:4]
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
 
@@ -254,7 +266,8 @@ class MostPopularfiveAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        items = Item.objects.filter(most_popular=True , status=True)[:5]  # Fetch only the first five items
+        items = Item.objects.all()
+        items = [item for item in items if item.most_popular and item.status][:4]
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
 
@@ -262,6 +275,7 @@ class AllfiveProduct(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        items = Item.objects.filter(status=True)[:5]  # Fetch only the first five items
+        items = Item.objects.all()
+        items = [item for item in items if item.status][:4]
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)

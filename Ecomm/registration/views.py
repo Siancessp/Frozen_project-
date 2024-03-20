@@ -96,7 +96,8 @@ class LoginView(APIView):
             refresh = RefreshToken.for_user(user)
 
             response_data = {
-                'status':'success',
+                'status': 'success',
+
                 'refresh': str(refresh)
                 ,
                 'access': str(refresh.access_token),

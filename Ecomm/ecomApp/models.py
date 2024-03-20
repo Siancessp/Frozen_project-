@@ -29,7 +29,7 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     id= models.AutoField(primary_key=True)
     phone_number = models.CharField(max_length=15, unique=True)  # You can adjust the max_length as needed.
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255,null=True)
     bio=models.CharField(max_length=255,default='')
     profile_photo=models.ImageField(upload_to='videos/', null=True, blank=True)
     referral_code = models.CharField(max_length=10, blank=True, null=True)

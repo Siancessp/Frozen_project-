@@ -19,7 +19,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 import os
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'ecomApp', 'staticfiles')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -55,6 +55,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
+    'jazzmin',
+
+
 
 ]
 REST_FRAMEWORK = {
@@ -133,6 +136,24 @@ DATABASES = {
         },
     }
 }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'djongo',
+#         'NAME': 'testdb1',
+#         'ENFORCE_SCHEMA': False,  # Enforce schema validation
+#         'CLIENT': {
+#             'host': 'mongodb+srv://user:user@cluster0.a7xiyou.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
+#             'port': 27017,  # Default MongoDB port
+#             'username': 'user',
+#             'password': 'user',
+#             'ssl': False,
+#             # 'connectTimeoutMS': 5000,  # 5 seconds timeout
+#             # 'socketTimeoutMS': 5000,  # 1 minute timeout
+#
+#         },
+#     }
+# }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -175,7 +196,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ALLOWED_HOSTS = ['*']
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'ecomApp', 'staticfiles')
 #216 219 212 database 221
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
