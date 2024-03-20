@@ -69,6 +69,7 @@ class RegistrationView(APIView):
             refresh = RefreshToken.for_user(user)
 
             response_data = {
+                'status':'success',
                 'refresh': str(refresh)
 ,
                 'access': str(refresh.access_token),
@@ -95,6 +96,7 @@ class LoginView(APIView):
             refresh = RefreshToken.for_user(user)
 
             response_data = {
+                'status':'success',
                 'refresh': str(refresh)
                 ,
                 'access': str(refresh.access_token),
