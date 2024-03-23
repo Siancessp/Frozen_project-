@@ -9,7 +9,8 @@ urlpatterns = [
     path('backend/advertisement/deactivate/<int:add_id>/', deactivate_add, name='deactivate_add'),
     path('backend/advertisement/delete/<int:add_id>/', delete_add, name='delete_add'),
     path('backend/advertisement/view/<int:add_id>/', view_add, name='view_add'),
-    path('backend/advertisement/update/<int:add_id>/', update_add, name='update_add'),
+    path(
+        'backend/advertisement/update/<int:add_id>/', update_add, name='update_add'),
     path('backend/advertisement/edit/<int:add_id>/', edit_add, name='edit_add'),
-    path('api/banners/', BannerByCategoryAPIView.as_view(), name='banner_by_category'),
+    path('api/adds/', AddByCategoryAPIView.as_view(), name='add_by_category'),
 ]

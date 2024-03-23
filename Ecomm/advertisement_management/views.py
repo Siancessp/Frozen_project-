@@ -100,18 +100,23 @@ from .models import Advertisement
 from .serializers import AdvertisementSerializer
 from django.http import Http404
 from rest_framework import status
-class BannerByCategoryAPIView(APIView):
+class AddByCategoryAPIView(APIView):
     def get(self, request):
         try:
             # Get the category_id from query parameters
             category_id = request.query_params.get('category_id')
 
-            # Fetch banners for the specified category ID
-            banners = Advertisement.objects.filter(category_id=category_id)
-            serializer = AdvertisementSerializer(banners, many=True)
+            # Fetch advertisements for the specified category ID
+            advertisements = Advertisement.objects.filter(category_id=category_id)
+
+            # Filter advertisements with status=True
+            active_advertisements = [advertisement for advertisement in advertisements if advertisement.status]
+
+            # Serialize the filtered advertisements
+            serializer = AdvertisementSerializer(active_advertisements, many=True)
             return Response(serializer.data)
         except Advertisement.DoesNotExist:
-            return Response({"error": "Banners for the specified category do not exist"},
+            return Response({"error": "Advertisements for the specified category do not exist"},
                             status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

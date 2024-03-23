@@ -29,6 +29,7 @@ urlpatterns = [
     path('', include('registration.urls')),
     path('', include('menu_management.urls')),
     path('', include('advertisement_management.urls')),
+    path('', include('banner_management.urls')),
     path('', include('order.urls')),
 
 ]
