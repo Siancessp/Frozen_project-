@@ -19,15 +19,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 import os
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-# Define additional directories where Django will look for static files
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-    # Add more directories if needed
-]
-STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'ecomApp', 'staticfiles')
 
-# Define the directory where collected static files will be stored
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -64,6 +57,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'jazzmin',
     'banner_management',
+    'cart'
 
 
 
@@ -204,7 +198,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ALLOWED_HOSTS = ['*']
-# STATIC_ROOT = os.path.join(BASE_DIR, 'ecomApp', 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'ecomApp', 'staticfiles')
 #216 219 212 database 221
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'

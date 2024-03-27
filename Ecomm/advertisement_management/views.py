@@ -100,7 +100,11 @@ from .models import Advertisement
 from .serializers import AdvertisementSerializer
 from django.http import Http404
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+
 class AddByCategoryAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         try:
             # Get the category_id from query parameters

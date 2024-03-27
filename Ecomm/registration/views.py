@@ -106,3 +106,75 @@ class LoginView(APIView):
         else:
             # Authentication failed
             return Response({'error': 'Invalid credentials'}, status=401)
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import Address
+from .serializers import AddressSerializer
+from rest_framework.permissions import IsAuthenticated
+
+class AddressList(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        addresses = Address.objects.all()
+        serializer = AddressSerializer(addresses, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        # Accessing data using request.data.get()
+        name = request.data.get('newname')
+        phone = request.data.get('phone')
+        address = request.data.get('address')
+        city = request.data.get('city')
+        state = request.data.get('state')
+        country = request.data.get('country')
+        zip_code = request.data.get('zip_code')
+        user_id = request.data.get('user_id')
+
+        # Check if user_id is provided and if it is a valid user ID
+        if not user_id:
+            return Response({"error": "User ID is required."}, status=400)
+        try:
+            user = CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "Invalid User ID."}, status=400)
+
+        # Create the Address object
+        address_obj = Address.objects.create(
+            newname=name,
+            phone=phone,
+            address=address,
+            city=city,
+            state=state,
+            country=country,
+            zip_code=zip_code,
+            status=1,
+            user_id=user
+        )
+
+        return Response({"message": "Address created successfully."}, status=201)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_delivery_time(request):
+
+    address_id = request.data.get('address_id')
+    new_delivery_time = request.data.get('delivery_time')
+
+    if not address_id:
+        return Response({"error": "Address ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        address = Address.objects.get(pk=address_id)
+    except Address.DoesNotExist:
+        return Response({"error": "Address not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    if new_delivery_time:
+        address.delivery_time = new_delivery_time
+        address.save()
+        return Response({"message": "Delivery time updated successfully."}, status=status.HTTP_200_OK)
+    else:
+        return Response({"error": "Delivery time not provided."}, status=status.HTTP_400_BAD_REQUEST)
