@@ -96,6 +96,7 @@ class LoginView(APIView):
             refresh = RefreshToken.for_user(user)
 
             response_data = {
+                'user_id':user.id,
                 'status': 'success',
 
                 'refresh': str(refresh)
@@ -115,12 +116,27 @@ from .serializers import AddressSerializer
 from rest_framework.permissions import IsAuthenticated
 
 class AddressList(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # Allow access to all users
 
     def get(self, request):
-        addresses = Address.objects.all()
-        serializer = AddressSerializer(addresses, many=True)
-        return Response(serializer.data)
+        try:
+            # Get the user_id from query parameters
+            user_id = request.query_params.get('user_id')
+
+            # Check if user_id parameter is provided
+            if user_id is None:
+                return Response({"error": "user_id parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Retrieve addresses associated with the user
+            addresses = Address.objects.filter(user_id=user_id)
+
+            # Serialize the addresses data
+            serializer = AddressSerializer(addresses, many=True)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
         # Accessing data using request.data.get()

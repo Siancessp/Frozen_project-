@@ -34,8 +34,9 @@
                   <thead>
                     <tr>
                       <th>ID</th>
-                      <th>Customer Name</th>
+                      <th>Coupon Value</th>
                       <th>Occasion Name</th>
+                      <th>Start Date</th>
                       <th>Expire Date</th>
                       <th>Coupon Value</th>
                       <th>Coupon Type</th>
@@ -49,8 +50,9 @@
                     {% for coupon in coupons %}
                       <tr>
                         <td>{{ coupon.id }}</td>
-                        <td>{{ coupon.customer }}</td>
+                        <td>{{ coupon.coupon }}</td>
                         <td>{{ coupon.occasion}}</td>
+                        <td>{{ coupon.start_date }}</td>
                         <td>{{ coupon.expire_date }}</td>
                         <td>{{ coupon.coupon_value }}</td>
                         <td>{{ coupon.coupon_type }}</td>

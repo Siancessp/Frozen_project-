@@ -106,10 +106,15 @@ class Product(models.Model):
 
 class CustomerCoupon(models.Model):
     id = models.AutoField(primary_key=True)
-    customer =  models.CharField(max_length=255)
+    coupon =  models.CharField(max_length=255)
     occasion = models.CharField(max_length=255)
+    start_date = models.DateField()
     expire_date = models.DateField()
     coupon_value = models.CharField(max_length=255)
     coupon_type = models.CharField(max_length=20)
     description = models.TextField()
+    status= models.BooleanField(default=True)
+class DeliveryCharge(models.Model):
+    id = models.AutoField(primary_key=True)
+    charge =  models.IntegerField()
     status= models.BooleanField(default=True)

@@ -41,4 +41,11 @@ urlpatterns = [
     path('backend/customer_couponlist/deactivate_coupon/<int:coupon_id>/', deactivate_coupon,
          name='customer_couponlist/deactivate_coupon'),
 
+    path('backend/chargeapp/', charge, name="chargeapp"),
+    path('backend/chargeadd/', chargeadd, name="chargeadd"),
+    path('backend/chargeapp/delete_item/<int:myid>/', delete_charge, name="delete_charge"),
+    path('backend/chargeapp/edit_item/<int:myid>/', edit_charge, name="edit_charge"),
+    path('backend/chargeapp/update_item/<int:myid>/', update_charge, name="update_charge"),
+
+
 ]

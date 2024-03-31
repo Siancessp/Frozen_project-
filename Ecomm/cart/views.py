@@ -145,11 +145,38 @@ class RemoveCartItem(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+# class CartTotalPrice(APIView):
+#     def get(self, request):
+#         try:
+#             # Get the user_id from query parameters
+#             user_id = request.query_params.get('user_id')
+#
+#             # Check if user_id parameter is provided
+#             if user_id is None:
+#                 return Response({"error": "user_id parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#             # Check if user_id is a valid integer
+#             if not str(user_id).isdigit():
+#                 return Response({"error": "Valid user_id parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#             # Retrieve all cart items for the specified user_id
+#             cart_items = Cart.objects.filter(u_id=user_id)
+#
+#             # Calculate total price by summing the prices of all cart items
+#             total_price = sum(cart_item.price for cart_item in cart_items)
+#
+#             return Response({"total_price": total_price}, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+from datetime import date
+from django.utils import timezone
+from ecomApp.models import CustomerCoupon,DeliveryCharge
 class CartTotalPrice(APIView):
     def get(self, request):
         try:
-            # Get the user_id from query parameters
+            # Get the user_id and coupon value from query parameters
             user_id = request.query_params.get('user_id')
+            coupon_value_param = request.query_params.get('coupon_value')
 
             # Check if user_id parameter is provided
             if user_id is None:
@@ -164,7 +191,41 @@ class CartTotalPrice(APIView):
 
             # Calculate total price by summing the prices of all cart items
             total_price = sum(cart_item.price for cart_item in cart_items)
+            previous_price = total_price  # Initialize with the total price
+            discounted_price = 0
 
-            return Response({"total_price": total_price}, status=status.HTTP_200_OK)
+            # Get today's date
+            today_date = date.today()
+
+            # If coupon value is provided in params, attempt to apply it directly
+            if coupon_value_param:
+                try:
+                    # Check if today's date is within the validity period of the coupon
+                    coupon = CustomerCoupon.objects.get(
+                        coupon=coupon_value_param,
+                        start_date__lte=today_date,
+                        expire_date__gte=today_date
+                    )
+
+                    # Apply coupon discount
+                    discounted_price = total_price * (int(coupon.coupon_value) / 100)
+                    total_price -= discounted_price
+                except CustomerCoupon.DoesNotExist:
+                    pass
+
+            # Retrieve the first delivery charge
+            delivery_charge = DeliveryCharge.objects.first()
+
+            if delivery_charge:
+                # Add the delivery charge to the total price
+                total_price += delivery_charge.charge
+
+            return Response({
+                "total_price": total_price,
+                "previous_price": previous_price,
+                "discounted_price": discounted_price,
+                "delivery_charge": delivery_charge.charge if delivery_charge else None
+            }, status=status.HTTP_200_OK)
+
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

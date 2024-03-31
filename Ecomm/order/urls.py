@@ -17,6 +17,8 @@ urlpatterns = [
     # path('backend/orderapp/returnaccepted/<int:catagory_id>/', returnaccepted, name='orderapp/returnaccepted'),
     path('update_status/<int:order_id>/', update_status, name='update_status'),
 
+    path('api/create_order/', create_order, name='create_order'),
+    path('api/verify_payment/', verify_payment, name='verify_payment'),
     # path('api/create_order/', create_order, name='create_order')
     # ... other URLs
 ]

@@ -336,6 +336,7 @@ def add_customer_coupon(request):
     if request.method == 'POST':
         customer_name = request.POST.get('customerName')
         occasion_name = request.POST.get('occasionName')
+        start_date = request.POST.get('startDate')
         expire_date = request.POST.get('expireDate')
         coupon_value = request.POST.get('couponValue')
         coupon_type = request.POST.get('couponType')
@@ -343,9 +344,10 @@ def add_customer_coupon(request):
         # Assuming 'occasion_name' is the name of the occasion for which the coupon is issued
 
         customer_coupon = CustomerCoupon(
-            customer=customer_name,
+            coupon=customer_name,
             occasion=occasion_name,
             expire_date=expire_date,
+            start_date=start_date,
             coupon_value=coupon_value,
             coupon_type=coupon_type,
             description=description
@@ -378,3 +380,59 @@ def deactivate_coupon(request, coupon_id):
     banner.status = False
     banner.save()
     return redirect('customer_couponlist')  # Redirect to your banner list view
+
+
+
+
+
+
+
+
+from .models import DeliveryCharge
+@login_required(login_url='backend/login')
+def charge(request):
+    productapp=DeliveryCharge.objects.all()
+
+    context={
+        'banform': productapp
+    }
+    return render(request,'backend/chargelist.html',context)
+@login_required(login_url='backend/login')
+def chargeadd(request):
+    if request.method == "POST":
+        product = DeliveryCharge()
+        charge = request.POST.get('charge')
+
+        product.charge = charge
+
+        product.save()
+
+        return redirect('chargeapp')
+    # categories = Catagory.objects.get(status=True)
+    return render(request, 'backend/add_charge.html')
+@login_required(login_url='backend/login')
+def delete_charge(request, myid):
+    productapp=DeliveryCharge.objects.get(id=myid)
+    productapp.delete()
+    return redirect('chargeapp')
+@login_required(login_url='backend/login')
+def edit_charge(request, myid):
+    sel_proform=DeliveryCharge.objects.get(id=myid)
+    pro = DeliveryCharge.objects.all()
+    # categories = Catagory.objects.filter(status=True)
+    context = {
+
+        'pro': pro,
+        'sel_proform':sel_proform,
+
+    }
+    return render(request,'backend/edit_charge.html',context)
+@login_required(login_url='backend/login')
+def update_charge(request, myid):
+    productapp=DeliveryCharge.objects.get(id=myid)
+
+    productapp.charge = request.POST.get('charge')
+
+    productapp.save()
+
+    return redirect('chargeapp')
