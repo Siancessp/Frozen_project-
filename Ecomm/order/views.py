@@ -183,44 +183,44 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 import secrets
-@api_view(['POST'])
-def create_order(request):
-    # Assuming the user ID is sent in the request data
-    user_id = request.data.get('user')
-    pay = request.data.get('payment_id')
-    cou = request.data.get('coupon',"df                                         ")
-
-    user = get_object_or_404(CustomUser, id=user_id)
-    cart_items = Cartapi.objects.filter(user_id=user)
-
-    # Generate a random alphanumeric order_id with a prefix
-    order_id_prefix = 'gain_'
-    random_part = secrets.token_hex(8)  # Adjust the length of the token as needed
-    order_id = f'{order_id_prefix}{random_part}'
-
-    # Create orders from cart items
-    for cart_item in cart_items:
-        order_data = {
-            'order_id': order_id,
-            'user_id': user.id,
-            'product_id': cart_item.product_id.id,
-            'quantity': cart_item.quantity,
-            'payment_id': pay,
-            'couponcode': cou,
-            'amount': cart_item.total_price,
-            'status': 1,  # Set your status accordingly
-        }
-
-        order_serializer = OrderSerializer(data=order_data)
-        if order_serializer.is_valid():
-            order_serializer.save()
-        else:
-            return JsonResponse({'error': order_serializer.errors}, status=400)
-
-    # Delete all cart items for the user
-    cart_items.delete()
-
-    return JsonResponse({'message': 'Orders created successfully'})
+# @api_view(['POST'])
+# def create_order(request):
+#     # Assuming the user ID is sent in the request data
+#     user_id = request.data.get('user')
+#     pay = request.data.get('payment_id')
+#     cou = request.data.get('coupon',"df                                         ")
+#
+#     user = get_object_or_404(CustomUser, id=user_id)
+#     cart_items = Cartapi.objects.filter(user_id=user)
+#
+#     # Generate a random alphanumeric order_id with a prefix
+#     order_id_prefix = 'gain_'
+#     random_part = secrets.token_hex(8)  # Adjust the length of the token as needed
+#     order_id = f'{order_id_prefix}{random_part}'
+#
+#     # Create orders from cart items
+#     for cart_item in cart_items:
+#         order_data = {
+#             'order_id': order_id,
+#             'user_id': user.id,
+#             'product_id': cart_item.product_id.id,
+#             'quantity': cart_item.quantity,
+#             'payment_id': pay,
+#             'couponcode': cou,
+#             'amount': cart_item.total_price,
+#             'status': 1,  # Set your status accordingly
+#         }
+#
+#         order_serializer = OrderSerializer(data=order_data)
+#         if order_serializer.is_valid():
+#             order_serializer.save()
+#         else:
+#             return JsonResponse({'error': order_serializer.errors}, status=400)
+#
+#     # Delete all cart items for the user
+#     cart_items.delete()
+#
+#     return JsonResponse({'message': 'Orders created successfully'})
 
 from django.contrib import messages
 import razorpay
@@ -229,25 +229,50 @@ from django.http import JsonResponse, HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 
+from decimal import Decimal
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+
+
 def update_status(request, order_id):
     if request.method == 'POST':
-        selected_status = request.POST.get('status')
+        selected_status_str = request.POST.get('selected_status')
+        try:
+            selected_status = int(selected_status_str)
+        except (TypeError, ValueError):
+            # Handle the case where selected_status_str is not a valid integer
+            messages.error(request, 'Invalid status value!')
+            return redirect(request.META.get('HTTP_REFERER', 'fallback_url'))
+
         order = Order.objects.get(id=order_id)
         order.status = selected_status
+
+        # Convert amount, price, and total_price to Decimal
+
         order.save()
         messages.success(request, 'Status updated successfully!')
 
-    return redirect(request.META.get('HTTP_REFERER', 'fallback_url')) # Replace with your actual redirect URL
+    return redirect(request.META.get('HTTP_REFERER', 'fallback_url'))  # Replace with your actual redirect URL
+
 
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_SECRET_KEY))
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def create_order(request):
     if request.method == 'POST':
         user_id = request.POST.get('user_id')
         total_amount = request.POST.get('total_amount')
         coupon_code = request.POST.get('coupon_code')
         coupon_value = request.POST.get('coupon_value')
+        newname = request.POST.get('newname', "")
+        phone = request.POST.get('phone', "")
+        address = request.POST.get('address', "Pick UP")
+        city = request.POST.get('city', "")
+        state = request.POST.get('state', "")
+        country = request.POST.get('country', "")
+        zip_code = request.POST.get('zip_code', "")
+        delivery_time = request.POST.get('delivery_time', "")
 
         try:
             # Create order in Razorpay
@@ -267,12 +292,20 @@ def create_order(request):
                     product_id=cart_item.product_id,
                     payment_id='',  # Leave payment_id empty initially
                     couponcode=coupon_code,
-                    amount=cart_item.price,
-                    status=0,  # Set initial status
+                    status=1,  # Set initial status
                     quantity=cart_item.quantity,
                     price=cart_item.price,
                     total_price=total_amount,
                     signature='',  # Leave signature empty initially
+
+                    newname=newname,
+                    phone=phone,
+                    address=address,
+                    city=city,
+                    state=state,
+                    country=country,
+                    zip_code=zip_code,
+                    delivery_time=delivery_time
                 )
 
             return JsonResponse({'razorpay_order_id': razorpay_order['id'], 'couponcode': coupon_code, 'total_price': total_amount}, status=200)
@@ -285,6 +318,7 @@ def create_order(request):
 
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def verify_payment(request):
     if request.method == 'POST':
         try:

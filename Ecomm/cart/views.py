@@ -171,7 +171,10 @@ class RemoveCartItem(APIView):
 from datetime import date
 from django.utils import timezone
 from ecomApp.models import CustomerCoupon,DeliveryCharge
+from order.models import Order
 class CartTotalPrice(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         try:
             # Get the user_id and coupon value from query parameters
@@ -197,8 +200,9 @@ class CartTotalPrice(APIView):
             # Get today's date
             today_date = date.today()
 
+
             # If coupon value is provided in params, attempt to apply it directly
-            if coupon_value_param:
+            if coupon_value_param and not Order.objects.filter(user_id=user_id, couponcode=coupon_value_param):
                 try:
                     # Check if today's date is within the validity period of the coupon
                     coupon = CustomerCoupon.objects.get(
@@ -208,6 +212,7 @@ class CartTotalPrice(APIView):
                     )
 
                     # Apply coupon discount
+
                     discounted_price = total_price * (int(coupon.coupon_value) / 100)
                     total_price -= discounted_price
                 except CustomerCoupon.DoesNotExist:

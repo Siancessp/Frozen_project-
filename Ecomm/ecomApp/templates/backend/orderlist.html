@@ -42,10 +42,12 @@
                         <th>Customer Name</th>
                         <th>Order Id</th>
                         <th>Catagory </th>
-                        <th>Product Id</th>
+                        <th>Product Name</th>
+                        <th>Product Quantity</th>
                         <th>Payment Id</th>
                         <th>Coupon Code</th>
                         <th>Amount</th>
+                        <th>Total Order Amount</th>
                         <th>Status</th>
                         <th>Action</th>
 
@@ -57,24 +59,27 @@
                         <td>{{forloop.counter}}</td>
                         <td>{{i.user_id.full_name}}</td>
                         <td>{{i.order_id}}</td>
-                        <td>{{i.cat_id}}</td>
-                        <td>{{i.product_id}}</td>
-                        <td>{{i.payment_id}}</td>
+                        <td>{{i.product_id.category}}</td>
+                        <td>{{i.product_id.title}}</td>
+                        <td>{{i.quantity}}{{i.product_id.item_measurement}}</td>
+                        <td>{% if i.payment_id %}{{i.payment_id}}{% else %} Not Payment Yet{% endif %}</td>
                         <td>{{i.couponcode}}</td>
-                        <td>{{i.amount}}</td>
+                        <td>{{i.price}}</td>
+                        <td>{{i.total_price}}</td>
+
 
                       <td>
-    {% if i.status == 1 %}
+    {% if i.status == "1" %}
         <a href="" id="activeLink" class="btn btn-primary text-white">Pending</a>
-    {% elif i.status == 2 %}
+    {% elif i.status == "2" %}
         <a href="" id="activeLink" class="btn btn-info text-white">Confirm</a>
-    {% elif i.status == 3 %}
+    {% elif i.status == "3" %}
         <a href="" id="activeLink" class="btn btn-secondary text-white">Dispatch</a>
-    {% elif i.status == 4 %}
+    {% elif i.status == "4" %}
         <a href="" id="activeLink" class="btn btn-success text-white">Delivered</a>
-    {% elif i.status == 5 %}
+    {% elif i.status == "5" %}
         <a href="" id="activeLink" class="btn btn-danger text-white">Cancel</a>
-    {% elif i.status == 6 %}
+    {% elif i.status == "6" %}
         <a href="" id="activeLink" class="btn btn-success text-white">Return Request</a>
     {% else %}
         <a href="" id="blockLink" class="btn btn-warning text-white">Return Accepted</a>

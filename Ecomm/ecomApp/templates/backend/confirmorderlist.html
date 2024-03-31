@@ -23,14 +23,14 @@
       </div><!-- /.container-fluid -->
     </div>
 
-      <div class="container-fluid">
+     <div class="container-fluid">
 
     <div class="">
         <div class="table-wrapper">
 
             <div class="table-title">
                 <div class="row">
-                    <div class="col-sm-8"><h2>Confirmed Order <b>Details</b></h2></div>
+                    <div class="col-sm-8"><h2>Order <b>Details</b></h2></div>
 
                 </div>
             </div>
@@ -39,15 +39,15 @@
                 <thead>
                     <tr>
                         <th>Sl No</th>
-                        <th>User Name</th>
+                        <th>Customer Name</th>
                         <th>Order Id</th>
-                        <th>Catagory Id</th>
-                        <th>Product Id</th>
+                        <th>Catagory </th>
+                        <th>Product Name</th>
+                        <th>Product Quantity</th>
                         <th>Payment Id</th>
                         <th>Coupon Code</th>
                         <th>Amount</th>
-
-<!--                        <th>Action</th>-->
+                        <th>Total Order Amount</th>
 
                     </tr>
                 </thead>
@@ -55,13 +55,16 @@
                 {% for i in ordercon %}
                     <tr>
                         <td>{{forloop.counter}}</td>
-                        <td>{{i.user_id}}</td>
+                        <td>{{i.user_id.full_name}}</td>
                         <td>{{i.order_id}}</td>
-                        <td>{{i.cat_id}}</td>
-                        <td>{{i.product_id}}</td>
+                        <td>{{i.product_id.category}}</td>
+                        <td>{{i.product_id.title}}</td>
+                        <td>{{i.quantity}}{{i.product_id.item_measurement}}</td>
                         <td>{{i.payment_id}}</td>
                         <td>{{i.couponcode}}</td>
-                        <td>{{i.amount}}</td>
+                        <td>{{i.price}}</td>
+                        <td>{{i.total_price}}</td>
+
 
 
 

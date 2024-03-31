@@ -75,27 +75,50 @@
 
                   <!-- /.col-lg-6 -->
                   <div class="col-lg-6">
-                   <h5 class="mt-4 mb-2"><b>Customer Name</b></h5>
+                   <h5 class="mt-4 mb-2"><b>Customer Details</b></h5>
                     <div class="input-group">
-                     <p class="form-control">{{sel_ordform.user_id.full_name}}</p>
+                     <p > {% if sel_ordform.newname %}
+            {{ sel_ordform.newname }}<br>
+        {% endif %}
+        {% if sel_ordform.phone %}
+            {{ sel_ordform.phone }}<br>
+        {% endif %}</p>
                     </div>
                   </div>
                 </div>
 
               <div class="row">
                   <div class="col-lg-6">
-                   <h5 class="mt-4 mb-2"><b>Category Id</b></h5>
+                   <h5 class="mt-4 mb-2"><b>Customer's Address</b></h5>
                     <div class="input-group">
-                          <p class="form-control">{{sel_ordform.cat_id}}</p>
+                          <p >  {% if sel_ordform.address %}
+
+            {{ sel_ordform.address }}<br>
+        {% endif %}
+        {% if sel_ordform.city %}
+            {{ sel_ordform.city }},
+        {% endif %}
+        {% if sel_ordform.state %}
+            {{ sel_ordform.state }}<br>
+        {% endif %}
+        {% if sel_ordform.country %}
+            {{ sel_ordform.country }},
+        {% endif %}
+        {% if sel_ordform.zip_code %}
+            {{ sel_ordform.zip_code }}<br>
+        {% endif %}
+        {% if sel_ordform.delivery_time %}
+            Delivery Time: {{ sel_ordform.delivery_time }}
+        {% endif %}</p>
                     </div>
                     <!-- /input-group -->
                   </div>
 
                   <!-- /.col-lg-6 -->
                   <div class="col-lg-6">
-                   <h5 class="mt-4 mb-2"><b>Product Id</b></h5>
+                   <h5 class="mt-4 mb-2"><b>Product Name</b></h5>
                     <div class="input-group">
-                        <p class="form-control">{{sel_ordform.product_id}}</p>
+                        <p class="form-control">{{sel_ordform.product_id.title}}  {{sel_ordform.quantity}}{{sel_ordform.product_id.item_measurement}}</p>
                     </div>
                   </div>
                 </div>
@@ -122,7 +145,7 @@
                   <div class="col-lg-6">
                    <h5 class="mt-4 mb-2"><b>Amount</b></h5>
                     <div class="input-group">
-                       <p class="form-control">{{sel_ordform.amount}}</p>
+                       <p class="form-control" name="price">{{sel_ordform.price}}</p>
                     </div>
                     <!-- /input-group -->
                   </div>
@@ -131,17 +154,17 @@
                  <div class="col-lg-6">
     <h5 class="mt-4 mb-2"><b>Status</b></h5>
 
-    <form method="post" action="{% url 'update_status' sel_ordform.id %}">
+    <form method="post" action="{% url 'newupdate_status' sel_ordform.id %}">
         {% csrf_token %}
         <div class="input-group">
-            <select  class="form-control" name="status" id="status">
-                <option class="btn btn-primary"value="1" {% if sel_ordform.status == 1 %}selected{% endif %}>Pending</option>
-                <option class="btn btn-primary"value="2" {% if sel_ordform.status == 2 %}selected{% endif %}>Confirm</option>
-                <option class="btn btn-primary"value="3" {% if sel_ordform.status == 3 %}selected{% endif %}>Dispatch</option>
-                <option class="btn btn-primary"value="4" {% if sel_ordform.status == 4 %}selected{% endif %}>Delivered</option>
-                <option class="btn btn-primary"value="5" {% if sel_ordform.status == 5 %}selected{% endif %}>Cancel</option>
-                <option class="btn btn-primary"value="6" {% if sel_ordform.status == 6 %}selected{% endif %}>Return Request</option>
-                <option class="btn btn-primary"value="7" {% if sel_ordform.status == 7 %}selected{% endif %}>Return Accepted</option>
+            <select  class="form-control" name="selected_status" id="status">
+                <option  class="btn btn-primary"value="1" {% if sel_ordform.status == "1" %}selected{% endif %}>Pending</option>
+                <option  class="btn btn-primary"value="2" {% if sel_ordform.status == "2" %}selected{% endif %}>Confirm</option>
+                <option  class="btn btn-primary"value="3" {% if sel_ordform.status == "3" %}selected{% endif %}>Dispatch</option>
+                <option  class="btn btn-primary"value="4" {% if sel_ordform.status == "4" %}selected{% endif %}>Delivered</option>
+                <option  class="btn btn-primary"value="5" {% if sel_ordform.status == "5" %}selected{% endif %}>Cancel</option>
+                <option  class="btn btn-primary"value="6" {% if sel_ordform.status == "6" %}selected{% endif %}>Return Request</option>
+                <option  class="btn btn-primary"value="7" {% if sel_ordform.status == "7" %}selected{% endif %}>Return Accepted</option>
             </select>
             <button type="submit" class="btn btn-primary">Save</button>
         </div>
