@@ -13,4 +13,6 @@ urlpatterns = [
     path('api/remove-cart-item/', RemoveCartItem.as_view(), name='remove_cart_item'),
     path('api/get_total_price/', CartTotalPrice.as_view(), name='CartTotalPrice'),
 
+    path('api/send_coupon/', send_coupon, name='send_coupon'),
+
 ]

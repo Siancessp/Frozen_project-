@@ -69,7 +69,7 @@ def update_add(request, add_id):
     try:
         item_photo = request.FILES.get('item_photo')
         if item_photo:
-            edit_item.item_photo = item_photo
+            edit_item.add_photo = item_photo
         edit_item.title = request.POST.get('title')
         edit_item.description = request.POST.get('description')
         edit_item.category_id = request.POST.get('category')  # Assuming you're passing category id from the form

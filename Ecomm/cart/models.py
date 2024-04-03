@@ -16,3 +16,7 @@ class Cart(models.Model):
 
     def __str__(self):
         return f"Cart item - ID: {self.id}"
+class CartCoupon(models.Model):
+    id = models.AutoField(primary_key=True)
+    user_id = models.IntegerField(unique=True)
+    coupon_code = models.CharField(max_length=50)

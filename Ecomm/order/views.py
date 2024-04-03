@@ -23,26 +23,6 @@ class OrderView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# class OrderList(APIView):
-#     def get(self, request, pk):
-#         user = get_object_or_404(Order, pk=pk)
-#         serializer = OrderSerializer(user)
-#         return Response(serializer.data)
-#
-#     def put(self, request, pk):
-#         user = get_object_or_404(Order, pk=pk)
-#         serializer = OrderSerializer(user, data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
-#     def delete(self, request, pk):
-#         user = get_object_or_404(Order, pk=pk)
-#         user.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
-#for noww...
-
 
 def orderlist(request):
     orderapp=Order.objects.all()
@@ -66,55 +46,6 @@ def view_item(request, myid):
          'sel_ordform': sel_ordform
     }
      return render(request, 'backend/orderview.html', context)
-
-# def activate_catagory(request, catagory_id):
-#     banner = get_object_or_404(Order, id=catagory_id)
-#     banner.status = 3
-#     banner.save()
-#     return redirect('orderapp')  # Redirect to your banner list view
-#
-# def deactivate_catagory(request, catagory_id):
-#     banner = get_object_or_404(Order, id=catagory_id)
-#     banner.status = 4
-#     banner.save()
-#     return redirect('orderapp')  # Redirect to your banner list view
-# # Create your views here.
-# def suspend_user(request, catagory_id):
-#     banner = get_object_or_404(Order, id=catagory_id)
-#     banner.status = 2
-#     banner.save()
-#
-#
-#     return redirect('orderapp')  # Redirect to your category list view
-# def returnrequest(request, catagory_id):
-#     banner = get_object_or_404(Order, id=catagory_id)
-#     banner.status = 6
-#     banner.save()
-#
-#
-#     return redirect('orderapp')
-# def returnaccepted(request, catagory_id):
-#     banner = get_object_or_404(Order, id=catagory_id)
-#     banner.status = 7
-#     banner.save()
-#
-#
-#     return redirect('orderapp')
-# def deliver(request, catagory_id):
-#     banner = get_object_or_404(Order, id=catagory_id)
-#     banner.status = 5
-#     banner.save()
-#
-#
-#     return redirect('orderapp')  # Redirect to your category list view
-# def cancel(request, catagory_id):
-#     banner = get_object_or_404(Order, id=catagory_id)
-#     banner.status = 1
-#     banner.save()
-#
-#
-#     return redirect('orderapp')  # Redirect to your category list view
-
 
 
 
@@ -183,44 +114,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 import secrets
-# @api_view(['POST'])
-# def create_order(request):
-#     # Assuming the user ID is sent in the request data
-#     user_id = request.data.get('user')
-#     pay = request.data.get('payment_id')
-#     cou = request.data.get('coupon',"df                                         ")
-#
-#     user = get_object_or_404(CustomUser, id=user_id)
-#     cart_items = Cartapi.objects.filter(user_id=user)
-#
-#     # Generate a random alphanumeric order_id with a prefix
-#     order_id_prefix = 'gain_'
-#     random_part = secrets.token_hex(8)  # Adjust the length of the token as needed
-#     order_id = f'{order_id_prefix}{random_part}'
-#
-#     # Create orders from cart items
-#     for cart_item in cart_items:
-#         order_data = {
-#             'order_id': order_id,
-#             'user_id': user.id,
-#             'product_id': cart_item.product_id.id,
-#             'quantity': cart_item.quantity,
-#             'payment_id': pay,
-#             'couponcode': cou,
-#             'amount': cart_item.total_price,
-#             'status': 1,  # Set your status accordingly
-#         }
-#
-#         order_serializer = OrderSerializer(data=order_data)
-#         if order_serializer.is_valid():
-#             order_serializer.save()
-#         else:
-#             return JsonResponse({'error': order_serializer.errors}, status=400)
-#
-#     # Delete all cart items for the user
-#     cart_items.delete()
-#
-#     return JsonResponse({'message': 'Orders created successfully'})
 
 from django.contrib import messages
 import razorpay
@@ -261,20 +154,20 @@ razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_API_KEY, settings.RAZO
 @permission_classes([IsAuthenticated])
 def create_order(request):
     if request.method == 'POST':
-        user_id = request.POST.get('user_id')
-        total_amount = request.POST.get('total_amount')
-        coupon_code = request.POST.get('coupon_code')
-        coupon_value = request.POST.get('coupon_value')
-        newname = request.POST.get('newname', "")
-        phone = request.POST.get('phone', "")
-        address = request.POST.get('address', "Pick UP")
-        city = request.POST.get('city', "")
-        state = request.POST.get('state', "")
-        country = request.POST.get('country', "")
-        zip_code = request.POST.get('zip_code', "")
-        delivery_time = request.POST.get('delivery_time', "")
-
+        user_id = request.data.get('user_id')
+        total_amount = request.data.get('total_amount')
+        coupon_code = request.data.get('coupon_code')
+        coupon_value = request.data.get('coupon_value')
+        newname = request.data.get('newname', "")
+        phone = request.data.get('phone', "")
+        address = request.data.get('address', "Pick UP")
+        city = request.data.get('city', "")
+        state = request.data.get('state', "")
+        country = request.data.get('country', "")
+        zip_code = request.data.get('zip_code', "")
+        delivery_time = request.data.get('delivery_time', "")
         try:
+            print(user_id)
             # Create order in Razorpay
             order_amount = int(float(total_amount) * 100)  # Amount in paisa
             order_currency = 'INR'
@@ -308,7 +201,7 @@ def create_order(request):
                     delivery_time=delivery_time
                 )
 
-            return JsonResponse({'razorpay_order_id': razorpay_order['id'], 'couponcode': coupon_code, 'total_price': total_amount}, status=200)
+            return JsonResponse({'razorpay_order_id': razorpay_order['id'], 'couponcode': coupon_code, 'total_price': total_amount,'status':'success'}, status=200)
         except ObjectDoesNotExist:
             return JsonResponse({'error': 'User does not exist'}, status=404)
         except Exception as e:

@@ -46,6 +46,8 @@ class AddToCartAPIView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
+
 class CartDetailsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -172,6 +174,7 @@ from datetime import date
 from django.utils import timezone
 from ecomApp.models import CustomerCoupon,DeliveryCharge
 from order.models import Order
+from .models import CartCoupon
 class CartTotalPrice(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -179,7 +182,7 @@ class CartTotalPrice(APIView):
         try:
             # Get the user_id and coupon value from query parameters
             user_id = request.query_params.get('user_id')
-            coupon_value_param = request.query_params.get('coupon_value')
+            # coupon_value_param = request.query_params.get('coupon_value')
 
             # Check if user_id parameter is provided
             if user_id is None:
@@ -200,10 +203,11 @@ class CartTotalPrice(APIView):
             # Get today's date
             today_date = date.today()
 
-
+            coupon_value_param = CartCoupon.objects.get(user_id=user_id).coupon_code
             # If coupon value is provided in params, attempt to apply it directly
-            if coupon_value_param and not Order.objects.filter(user_id=user_id, couponcode=coupon_value_param):
+            if coupon_value_param:
                 try:
+                    print(coupon_value_param)
                     # Check if today's date is within the validity period of the coupon
                     coupon = CustomerCoupon.objects.get(
                         coupon=coupon_value_param,
@@ -234,3 +238,32 @@ class CartTotalPrice(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view, permission_classes
+from .models import CartCoupon
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def send_coupon(request):
+    if request.method == 'POST':
+        user_id = request.data.get('user_id')
+        print("Received user_id:", user_id)  # Log the received user_id for debugging
+
+        coupon = request.data.get('coupon')
+
+        try:
+            user = CustomUser.objects.get(id=user_id)
+            try:
+                existing_coupon = CartCoupon.objects.get(user_id=user.id)
+                existing_coupon.coupon_code = coupon
+                existing_coupon.save()
+                message = 'Coupon updated successfully'
+            except CartCoupon.DoesNotExist:
+                coupon = CartCoupon.objects.create(user_id=user.id, coupon_code=coupon)
+                message = 'Coupon sent successfully'
+            return JsonResponse({'message': message})
+        except CustomUser.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)

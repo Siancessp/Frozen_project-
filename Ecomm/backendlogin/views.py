@@ -13,7 +13,7 @@ def login_view(request):
             password = form.cleaned_data['password']
             user = authenticate(request, username=username, password=password,is_staff=True)
 
-            if user is not None and user.is_staff:
+            if user is not None:
                 login(request, user)
                 next_url = request.GET.get('next', reverse('backend/dashboard'))
                 return redirect(next_url)
