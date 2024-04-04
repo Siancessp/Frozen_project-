@@ -196,6 +196,8 @@ def update_delivery_time(request):
         return Response({"error": "Delivery time not provided."}, status=status.HTTP_400_BAD_REQUEST)
 
 class ProfileAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
     """
     API endpoint for user profiles.
     """
