@@ -14,6 +14,21 @@ class CustomUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = CustomUser.objects.create_user(**validated_data)
         return user
+
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CustomUser
+        fields = '__all__'
+        extra_kwargs = {
+            'password': {'required': False},
+            'phone_number': {'required': False},
+            'email': {'required': False},
+        }
+
+
 from rest_framework import serializers
 from .models import Address
 

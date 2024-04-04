@@ -32,6 +32,11 @@ class Order(models.Model):
     country = models.CharField(max_length=100)
     zip_code = models.CharField(max_length=20)
     delivery_time=models.CharField(max_length=50)
+    order_item_id=models.CharField(max_length=50)
+
+    dicounted_price=models.CharField(max_length=50)
+    previous_price=models.CharField(max_length=50)
+    delivery_price=models.CharField(max_length=50)
 
     def __str__(self):
         return  f"{self.id}"

@@ -175,6 +175,7 @@ from django.utils import timezone
 from ecomApp.models import CustomerCoupon,DeliveryCharge
 from order.models import Order
 from .models import CartCoupon
+import math
 class CartTotalPrice(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -182,7 +183,6 @@ class CartTotalPrice(APIView):
         try:
             # Get the user_id and coupon value from query parameters
             user_id = request.query_params.get('user_id')
-            # coupon_value_param = request.query_params.get('coupon_value')
 
             # Check if user_id parameter is provided
             if user_id is None:
@@ -203,24 +203,27 @@ class CartTotalPrice(APIView):
             # Get today's date
             today_date = date.today()
 
-            coupon_value_param = CartCoupon.objects.get(user_id=user_id).coupon_code
-            # If coupon value is provided in params, attempt to apply it directly
-            if coupon_value_param:
-                try:
-                    print(coupon_value_param)
-                    # Check if today's date is within the validity period of the coupon
-                    coupon = CustomerCoupon.objects.get(
-                        coupon=coupon_value_param,
-                        start_date__lte=today_date,
-                        expire_date__gte=today_date
-                    )
+            try:
+                # Attempt to retrieve the CartCoupon object
+                coupon_value_param = CartCoupon.objects.get(user_id=user_id).coupon_code
 
-                    # Apply coupon discount
+                # If coupon value is provided in params, attempt to apply it directly
+                if coupon_value_param:
+                    try:
+                        # Check if today's date is within the validity period of the coupon
+                        coupon = CustomerCoupon.objects.get(
+                            coupon=coupon_value_param,
+                            start_date__lte=today_date,
+                            expire_date__gte=today_date
+                        )
 
-                    discounted_price = total_price * (int(coupon.coupon_value) / 100)
-                    total_price -= discounted_price
-                except CustomerCoupon.DoesNotExist:
-                    pass
+                        # Apply coupon discount
+                        discounted_price = total_price * (int(coupon.coupon_value) / 100)
+                        total_price -= discounted_price
+                    except CustomerCoupon.DoesNotExist:
+                        pass
+            except CartCoupon.DoesNotExist:
+                pass
 
             # Retrieve the first delivery charge
             delivery_charge = DeliveryCharge.objects.first()
@@ -228,6 +231,13 @@ class CartTotalPrice(APIView):
             if delivery_charge:
                 # Add the delivery charge to the total price
                 total_price += delivery_charge.charge
+
+            # Ceil the total_price, previous_price, discounted_price, and delivery_charge
+            total_price = math.ceil(total_price * 100) / 100
+            previous_price = math.ceil(previous_price * 100) / 100
+            discounted_price = math.ceil(discounted_price * 100) / 100
+            if delivery_charge:
+                delivery_charge.charge = math.ceil(delivery_charge.charge * 100) / 100
 
             return Response({
                 "total_price": total_price,

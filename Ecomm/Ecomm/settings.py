@@ -190,7 +190,31 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'staticfiles/'
+# STATIC_URL = 'static'
+#
+# # Default primary key field type
+# # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
+#
+# DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# ALLOWED_HOSTS = ['*']
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR,'staticfiles'),
+#     # Add other directories if needed
+# ]
+#
+# # Define the directory where Django will collect static files for deployment
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# #216 219 212 database 221
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'mithai01234@gmail.com'
+# EMAIL_HOST_PASSWORD = 'ubpz dnre zoen rkuq'
+#
+# RAZORPAY_API_KEY="rzp_test_enEwAJBwuY35MP"
+# RAZORPAY_SECRET_KEY="GDMhskdQyL9mC1OohkGJAoKC"
+STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -198,12 +222,12 @@ STATIC_URL = 'staticfiles/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ALLOWED_HOSTS = ['*']
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR,'staticfiles'),
+    os.path.join(BASE_DIR,'static'),
     # Add other directories if needed
 ]
 
 # Define the directory where Django will collect static files for deployment
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')
 #216 219 212 database 221
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
