@@ -31,6 +31,7 @@ urlpatterns = [
     path('', include('advertisement_management.urls')),
     path('', include('banner_management.urls')),
     path('', include('order.urls')),
+    path('', include('walet.urls')),
     path('', include('cart.urls')),
 
 ]

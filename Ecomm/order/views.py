@@ -118,7 +118,7 @@ def cancel(request, catagory_id):
 
 
 
-
+from walet.models import Walet
 
 import random
 import string
@@ -224,10 +224,7 @@ def create_order(request):
                     delivery_time=delivery_time,
 
                 )
-            cart_items.delete()
-            cart_coupon = CartCoupon.objects.filter(user_id=user_id)
-            if cart_coupon:
-                cart_coupon.delete()
+
             return JsonResponse({'razorpay_order_id': razorpay_order['id'], 'couponcode': coupon_code, 'total_price': total_amount,'status':'success'}, status=200)
         except ObjectDoesNotExist:
             return JsonResponse({'error': 'User does not exist'}, status=404)
@@ -257,6 +254,7 @@ def verify_payment(request):
 
             # Update order status or save payment details to your database
             orders = Order.objects.filter(order_id=razorpay_order_id)
+
             for order in orders:
                 # Generate a unique order item ID
                 order_item_id = str(uuid4())
@@ -265,7 +263,15 @@ def verify_payment(request):
                 order.status = 1  # Set status to success
                 order.order_item_id = order_item_id
                 order.save()
-
+            user_id = orders.first().user_id.id
+            cart_items = Cart.objects.filter(u_id=user_id, status='Active')
+            cart_items.delete()
+            cart_coupon = CartCoupon.objects.filter(user_id=user_id)
+            if cart_coupon:
+                cart_coupon.delete()
+            cart_walet=Walet.objects.filter(user_id=user_id)
+            if cart_walet:
+                cart_walet.delete()
             return JsonResponse({'message': 'Payment successful'}, status=200)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
@@ -285,7 +291,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Order
 from .serializers import OrderSerializer
-
+from django.db.models import Max, Q
 
 class OrderListAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -293,25 +299,33 @@ class OrderListAPIView(APIView):
     def get(self, request):
         user_id = request.query_params.get('user_id')
 
-        # Fetch all orders for the given user
-        orders = Order.objects.filter(user_id=user_id)
+        # Fetch all orders for the given user where payment_id is not null
+        orders = Order.objects.filter(user_id=user_id, payment_id__isnull=False)
 
-        # Extract unique tuples containing order_id, created_at, total_price, and status
-        unique_orders = set((order.order_id, order.created_at, order.total_price, order.status) for order in orders)
+        # Group orders by order_id, keeping the latest order with the highest created_at timestamp
+        unique_orders = orders.values('order_id').annotate(
+            latest_created_at=Max('created_at'),
+            total_price=Max('total_price'),
+            status=Max('status'),
+            payment_id=Max('payment_id')
+        )
 
         # Construct list of dictionaries for each unique order
         order_list = []
         for order in unique_orders:
-            order_dict = {
-                'order_id': order[0],
-                'created_at': order[1].strftime("%d %b %Y, %I:%M %p"),
-                'total_price': order[2],
-                'status': order[3]
-            }
-            order_list.append(order_dict)
+            if order['payment_id']:  # Check if payment_id is not empty or null
+                order_dict = {
+                    'order_id': order['order_id'],
+                    'created_at': order['latest_created_at'].strftime("%d %b %Y, %I:%M %p"),
+                    'total_price': order['total_price'],
+                    'status': order['status']
+                }
+                order_list.append(order_dict)
 
         # Sort the order list in descending order based on created_at
         sorted_order_list = sorted(order_list, key=lambda x: x['created_at'], reverse=True)
+
+        return Response(sorted_order_list)
 
         return Response(sorted_order_list)
 from datetime import date
@@ -400,3 +414,83 @@ class OrderDetailsAPIView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+from django.http import JsonResponse, HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+
+from .models import Order
+
+from django.http import JsonResponse, HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+def generate_invoice(request):
+    order_id = request.GET.get('order_id')
+    if not order_id:
+        return JsonResponse({'error': 'Order ID is required'}, status=400)
+
+    # Retrieve one order's items with the given order_id
+    order_items = Order.objects.filter(order_id=order_id)
+
+    if not order_items:
+        return JsonResponse({'error': 'No items found for the specified order ID'}, status=404)
+
+    # Create PDF document
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename=invoice_{order_id}.pdf'
+
+    # Create a ReportLab PDF document
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    styles = getSampleStyleSheet()
+
+    # Build content for the invoice
+    elements = []
+
+    # Add title for the invoice
+    elements.append(Paragraph(f'Invoice for Order #{order_id}', styles['Title']))
+    order = order_items.first()  # Assuming all items belong to the same order
+    created_at_formatted = order.created_at.strftime('%d %B %Y')  # Format as "day Month Year"
+    elements.append(Paragraph(f'Created At: {created_at_formatted}', styles['Normal']))
+    elements.append(Paragraph(f'Customer Name: {order.newname}', styles['Normal']))
+    elements.append(Paragraph(f'Phone: {order.phone}', styles['Normal']))
+    elements.append(
+        Paragraph(f'Address: {order.address}, {order.city}, {order.state}, {order.country}, {order.zip_code}',
+                  styles['Normal']))
+    elements.append(Paragraph(f'Delivery Time: {order.delivery_time}', styles['Normal']))
+    elements.append(Paragraph(f'Discounted Price: {order.dicounted_price}', styles['Normal']))
+    elements.append(Paragraph(f'Previous Price: {order.previous_price}', styles['Normal']))
+    elements.append(Paragraph(f'Delivery Price: {order.delivery_price}', styles['Normal']))
+
+    # Fetch order details (assuming they are stored in the Order model, adjust as needed)
+    # order = Order.objects.get(order_id=order_id)
+    # elements.append(Paragraph(f'Order ID: {order.id}', styles['Normal']))
+    # elements.append(Paragraph(f'Customer: {order.newname}', styles['Normal']))
+    # Add more order details as needed
+
+    # Add items table
+    items_data = [[ 'Name', 'Quantity', 'Price', 'Total Price']]
+    for order_item in order_items:
+        items_data.append([ order_item.product_id.title, order_item.quantity, order_item.price,
+                           order_item.total_price])
+
+    items_table = Table(items_data, colWidths=[100, 200, 100, 100, 100])
+    items_table.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                     ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                     ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                     ('GRID', (0, 0), (-1, -1), 1, colors.black)]))
+
+    elements.append(Paragraph('Product Details:', styles['Heading2']))
+    elements.append(items_table)
+
+    # Add total amount for the order (you may need to adjust this based on how you calculate total price)
+    # total_amount = sum(order_item.total_price for order_item in order_items)
+    # elements.append(Paragraph(f'Total Amount: ${total_amount}', styles['Heading2']))
+
+    # Build PDF
+    doc.build(elements)
+    return response

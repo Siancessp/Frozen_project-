@@ -15,6 +15,7 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
+            background-image: url('{% static "assets/images/Frozenwala.png" %}'); background-size: cover; background-position: center; background-repeat: no-repeat;
         }
 
         .login-container {
@@ -84,7 +85,7 @@
 <body>
 
 <div class="login-container">
-     <img src="{%  static 'assets/images/Frozenwala logo.png' %}" alt="Frozenwala Logo" class="brand-image img-circle elevation" style="opacity: .8">
+     <img src="{%  static 'assets/images/Frozenwala logo.png' %}" alt="Frozenwala Logo" class="brand-image img-circle elevation" style="opacity: .8;width: 200px; height: 200px;">
     <h2>Login</h2>
      {% if error %}
         <p style="color: red;">{{ error }}</p>

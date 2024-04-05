@@ -56,7 +56,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'jazzmin',
     'banner_management',
-    'cart'
+    'cart',
+    'walet'
 
 
 

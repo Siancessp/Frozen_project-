@@ -39,6 +39,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     created_date=models.DateField(auto_now_add=True)
     blocked_users = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='users_blocked_by')
     status = models.IntegerField(default=1)
+    walet=models.FloatField()
     email = models.EmailField()
     # referral_link = models.CharField(max_length=255, blank=True, null=True, unique=True)
     # slug = models.CharField(max_length=15, blank=True,unique=True, null=True)

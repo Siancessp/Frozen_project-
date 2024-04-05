@@ -176,6 +176,7 @@ from ecomApp.models import CustomerCoupon,DeliveryCharge
 from order.models import Order
 from .models import CartCoupon
 import math
+from walet.models import Walet
 class CartTotalPrice(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -225,6 +226,14 @@ class CartTotalPrice(APIView):
             except CartCoupon.DoesNotExist:
                 pass
 
+            # Retrieve the wallet value
+            try:
+                wallet = Walet.objects.get(user_id=user_id)
+                wallet_value = float(wallet.wallet_value)  # Convert wallet value to float
+                total_price -= wallet_value  # Subtract wallet value from total price
+            except Walet.DoesNotExist:
+                wallet_value = None
+
             # Retrieve the first delivery charge
             delivery_charge = DeliveryCharge.objects.first()
 
@@ -243,7 +252,8 @@ class CartTotalPrice(APIView):
                 "total_price": total_price,
                 "previous_price": previous_price,
                 "discounted_price": discounted_price,
-                "delivery_charge": delivery_charge.charge if delivery_charge else None
+                "delivery_charge": delivery_charge.charge if delivery_charge else None,
+                "wallet_value": wallet_value
             }, status=status.HTTP_200_OK)
 
         except Exception as e:

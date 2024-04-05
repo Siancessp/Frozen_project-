@@ -22,6 +22,8 @@ urlpatterns = [
     path('api/orders/', OrderListAPIView.as_view(), name='grouped-order-list'),
     path('api/invoice/', OrderDetailsAPIView.as_view(), name='grouped-order-list'),
 
+    path('api/generate_invoice/', generate_invoice, name='generate_invoice'),
+
     # path('api/create_order/', create_order, name='create_order')
     # ... other URLs
 ]

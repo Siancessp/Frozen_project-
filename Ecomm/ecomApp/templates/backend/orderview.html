@@ -14,7 +14,7 @@
     }
 </style>
 
-<div class="content-wrapper" style="background-image: url('{% static "assets/images/Frozenwala.png" %}'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+<div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <div class="container-fluid">
@@ -160,7 +160,7 @@
             <select  class="form-control" name="selected_status" id="status">
                 <option  class="btn btn-primary"value="1" {% if sel_ordform.first.status == "1" %}selected{% endif %}>Pending</option>
                 <option  class="btn btn-primary"value="2" {% if sel_ordform.first.status == "2" %}selected{% endif %}>Confirm</option>
-                <option  class="btn btn-primary"value="3" {% if sel_ordform.first.status == "3" %}selected{% endif %}>Dispatch</option>
+                <option  class="btn btn-primary"value="3" {% if sel_ordform.first.status == "3" %}selected{% endif %}>Picked Up</option>
                 <option  class="btn btn-primary"value="4" {% if sel_ordform.first.status == "4" %}selected{% endif %}>Delivered</option>
                 <option  class="btn btn-primary"value="5" {% if sel_ordform.first.status == "5" %}selected{% endif %}>Cancel</option>
                 <option  class="btn btn-primary"value="6" {% if sel_ordform.first.status == "6" %}selected{% endif %}>Return Request</option>

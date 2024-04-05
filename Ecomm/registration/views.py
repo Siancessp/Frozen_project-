@@ -229,3 +229,55 @@ class ProfileAPI(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth import logout
+from django.shortcuts import get_object_or_404
+
+
+
+class SignOutAPI(APIView):
+    """
+    API endpoint for user sign-out.
+    """
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        # Retrieve the user_id from query parameters
+        user_id = request.query_params.get('user_id')
+
+        if not user_id:
+            return Response({"error": "user_id parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Retrieve the user object
+        user = get_object_or_404(CustomUser, id=user_id)
+
+        # Perform any additional checks if needed (e.g., verify user's identity)
+
+        # Perform the logout action
+        logout(request)
+
+        return Response({"message": "User successfully signed out."}, status=status.HTTP_200_OK)
+
+class DeleteAccountAPI(APIView):
+    """
+    API endpoint for user account deletion.
+    """
+    permission_classes = [IsAuthenticated]
+    def delete(self, request):
+        # Retrieve the user_id from query parameters
+        user_id = request.query_params.get('user_id')
+
+        if not user_id:
+            return Response({"error": "user_id parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Retrieve the user object
+        user = get_object_or_404(CustomUser, id=user_id)
+
+        # Perform any additional checks if needed (e.g., verify user's identity)
+
+        # Delete the user account
+        user.delete()
+
+        return Response({"message": "User account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
