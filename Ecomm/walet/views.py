@@ -27,30 +27,35 @@ from .models import Walet
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 
-@csrf_exempt
-@permission_classes([IsAuthenticated])
-def save_and_update_wallet(request):
-    if request.method == 'POST':
+class UpdateWallet(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user_id = request.data.get('user_id')
+
+        # Check if user exists
         try:
-            data = json.loads(request.body)
-            user_id = data.get('user_id')
-            amount=0
-            if not user_id:
-                return JsonResponse({'error': 'User ID or amount is missing'}, status=400)
+            user = CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "User does not exist."}, status=status.HTTP_400_BAD_REQUEST)
 
-            user = CustomUser.objects.get(pk=user_id)
-            amount = user.walet # Retrieve wallet_value from CustomUser object
+        wallet, created = Walet.objects.get_or_create(user_id=user.id)
 
-            # Update the user's wallet value
-            user.walet -= amount
-            user.save()
+        # Get amount to subtract from the wallet
+        try:
+            amount_to_subtract = user.walet
+        except AttributeError:
+            return Response({"error": "Wallet amount not provided."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Save the wallet transaction
-            Walet.objects.create(user_id=user.id, wallet_value=amount)
 
-            return JsonResponse({'success': 'Wallet transaction saved and wallet updated successfully'})
-        except (CustomUser.DoesNotExist, json.JSONDecodeError, ValueError):
-            return JsonResponse({'error': 'Invalid request data or user not found'}, status=400)
-    else:
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
+        wallet.wallet_value += amount_to_subtract
+        wallet.save()
+        user.walet-=amount_to_subtract
+        user.save()
+        return Response({"success"})

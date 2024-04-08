@@ -35,6 +35,8 @@ class Order(models.Model):
     order_item_id=models.CharField(max_length=50)
 
     dicounted_price=models.CharField(max_length=50)
+    walet_value=models.CharField(max_length=50)
+    pick_up=models.CharField(max_length=50)
     previous_price=models.CharField(max_length=50)
     delivery_price=models.CharField(max_length=50)
 

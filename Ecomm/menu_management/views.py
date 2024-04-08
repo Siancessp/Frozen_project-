@@ -23,6 +23,8 @@ def add_item(request):
         item_quantity = request.POST.get('item_quantity')
         item_old_price = request.POST.get('item_old_price')
         discount = request.POST.get('discount')
+        mp = request.POST.get('mp')
+
         category_id = request.POST.get('category')
         deal_of_the_day = request.POST.get('deal_of_the_day') == 'on'
         recommended = request.POST.get('recommended') == 'on'
@@ -38,6 +40,7 @@ def add_item(request):
             item_measurement=weight_units,
             description=description,
             item_photo=item_photo,
+            makingprice=mp,
             item_quantity=item_quantity,
             item_old_price=item_old_price,
             discount=discount,

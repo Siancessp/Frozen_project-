@@ -9,6 +9,7 @@ class Item(models.Model):
     item_quantity = models.PositiveIntegerField()
     item_measurement=models.CharField(max_length=10, default='')
     item_old_price = models.FloatField()
+    makingprice = models.FloatField()
     discount = models.IntegerField()
     item_new_price = models.FloatField()
     status= models.BooleanField(default=True)

@@ -15,8 +15,8 @@
           </div><!-- /.col -->
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active"><?= $page_title;?></li>
+<!--              <li class="breadcrumb-item"><a href="#">Home</a></li>-->
+<!--              <li class="breadcrumb-item active"><?= $page_title;?></li>-->
             </ol>
           </div><!-- /.col -->
         </div><!-- /.row -->
@@ -46,9 +46,10 @@
             <th>Item Description</th>
             <th>Item Photo</th>
             <th>Item Quantity</th>
-            <th>Item Old Price</th>
+            <th>Making Price</th>
+            <th>MRP</th>
             <th>Discount</th>
-            <th>Item New Price</th>
+            <th>Offer Price</th>
             <th>Status</th>
             <th>Category</th>
             <th>Action</th>
@@ -70,6 +71,7 @@
                 {% endif %}
             </td>
             <td>{{ item.item_quantity }}{{ item.item_measurement }}</td>
+            <td>{{ item.makingprice }}</td>
             <td>{{ item.item_old_price }}</td>
             <td>{{ item.discount }}</td>
             <td>{{ item.item_new_price }}</td>

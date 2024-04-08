@@ -12,6 +12,10 @@ class CustomUserSerializer(serializers.ModelSerializer):
         fields = ('phone_number',  'password','name')
 
     def create(self, validated_data):
+        # Set the walet attribute to 0.0 in the validated_data dictionary
+        validated_data['walet'] = 11.0
+
+        # Create the user with the updated validated_data
         user = CustomUser.objects.create_user(**validated_data)
         return user
 
@@ -27,7 +31,18 @@ class ProfileSerializer(serializers.ModelSerializer):
             'phone_number': {'required': False},
             'email': {'required': False},
         }
-
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['name', 'email', 'bio','profile_photo']
+        extra_kwargs = {
+            'password': {'required': False},  # Allow password to be optional
+            'email': {'required': False},  # Make email optional
+            'bio': {'required': False},
+            'name': {'required': False},
+            # Make bio optional
+            'profile_photo': {'required': False},
+        }
 
 from rest_framework import serializers
 from .models import Address

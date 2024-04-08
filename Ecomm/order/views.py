@@ -26,7 +26,7 @@ class OrderView(APIView):
 
 def orderlist(request):
     # Fetch all orders
-    orders = Order.objects.all()
+    orders = Order.objects.all().order_by('-created_at')
 
     # Create a dictionary to store orders grouped by their order_id
     orders_dict = {}
@@ -65,38 +65,47 @@ def view_item(request, myid):
      return render(request, 'backend/orderview.html', context)
 
 
-
-
 def suspend_user(request, catagory_id):
-    banner = get_object_or_404(Order, id=catagory_id)
-    banner.status = 2
-    banner.save()
-    return redirect('activate_catagory', catagory_id=catagory_id)
-
-def activate_catagory(request, catagory_id):
-    banner = get_object_or_404(Order, id=catagory_id)
-    banner.status = 3
-    banner.save()
-    return redirect('deactivate_catagory', catagory_id=catagory_id)
-
-def deactivate_catagory(request, catagory_id):
-    banner = get_object_or_404(Order, id=catagory_id)
-    banner.status = 4
-    banner.save()
-    return redirect('deliver', catagory_id=catagory_id)
-
-def deliver(request, catagory_id):
-    banner = get_object_or_404(Order, id=catagory_id)
-    banner.status = 5
-    banner.save()
-    return redirect('cancel', catagory_id=catagory_id)
+    order = get_object_or_404(Order, id=catagory_id)
+    order.status = 2  # Change status to "confirm"
+    order.save()
+    return redirect('orderapp:activate_catagory', catagory_id=catagory_id)
 
 def cancel(request, catagory_id):
-    banner = get_object_or_404(Order, id=catagory_id)
-    banner.status = 1
-    banner.save()
-    return redirect('', catagory_id=catagory_id)
+    order = get_object_or_404(Order, id=catagory_id)
+    order.status = 5  # Change status to "cancel"
+    order.save()
+    return redirect('orderapp:returnrequest', catagory_id=catagory_id)
 
+def activate_catagory(request, catagory_id):
+    order = get_object_or_404(Order, id=catagory_id)
+    order.status = 3  # Change status to "pickup"
+    order.save()
+    return redirect('orderapp:deactivate_catagory', catagory_id=catagory_id)
+
+def deactivate_catagory(request, catagory_id):
+    order = get_object_or_404(Order, id=catagory_id)
+    order.status = 4  # Change status to "delivered"
+    order.save()
+    return redirect('orderapp:deliver', catagory_id=catagory_id)
+
+def deliver(request, catagory_id):
+    order = get_object_or_404(Order, id=catagory_id)
+    order.status = 4  # Change status to "delivered"
+    order.save()
+    return redirect('orderapp:index')  # Redirect to main page after delivery
+
+def returnrequest(request, catagory_id):
+    order = get_object_or_404(Order, id=catagory_id)
+    order.status = 6  # Change status to "return request"
+    order.save()
+    return redirect('orderapp/returnaccepted', catagory_id=catagory_id)
+
+def returnaccepted(request, catagory_id):
+    order = get_object_or_404(Order, id=catagory_id)
+    order.status = 7  # Change status to "return accepted"
+    order.save()
+    return redirect('orderapp')  # Redi
 # def returnrequest(request, catagory_id):
 #     banner = get_object_or_404(Order, id=catagory_id)
 #     banner.status = 6
@@ -173,11 +182,12 @@ def create_order(request):
     if request.method == 'POST':
         user_id = request.data.get('user_id')
         total_amount = request.data.get('total_amount')
-        dicounted_price = request.data.get('dicounted_price')
+        dicounted_price = request.data.get('discounted_price', "")
         previous_price = request.data.get('previous_price')
-        delivery_price = request.data.get('delivery_price')
-
-        coupon_code = request.data.get('coupon_code')
+        delivery_price = request.data.get('delivery_price', "")
+        walet_value = request.data.get('walet_value',0)
+        pick_up=request.data.get('pick_up')
+        coupon_code = request.data.get('coupon_code', "")
         coupon_value = request.data.get('coupon_value')
         newname = request.data.get('newname', "")
         phone = request.data.get('phone', "")
@@ -206,9 +216,11 @@ def create_order(request):
                     product_id=cart_item.product_id,
                     payment_id='',  # Leave payment_id empty initially
                     couponcode=coupon_code,
+                    walet_value=walet_value,
+                    pick_up=pick_up,
                     status=1,  # Set initial status
                     quantity=cart_item.quantity,
-                    price=cart_item.price,
+                    price="{:.2f}".format(cart_item.price),
                     total_price=total_amount,
                     previous_price=previous_price,
                     dicounted_price=dicounted_price,

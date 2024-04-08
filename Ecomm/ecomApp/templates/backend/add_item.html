@@ -84,7 +84,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-lg-6">
-                                    <label for="item_old_price">Item Old Price:</label>
+                                    <label for="item_old_price">Item's Old Price(MRP):</label>
                                     <input type="number" id="item_old_price" name="item_old_price" required class="form-control">
                                 </div>
                                 <div class="col-lg-6">
@@ -98,12 +98,12 @@
                                     <input type="number" id="item_quantity" name="item_quantity" required class="form-control">
                                 </div>
                                 <div class="col-lg-6">
-                                    <label for="item_new_price">Item New Price:</label>
+                                    <label for="item_new_price">Offer Price:</label>
                                     <input type="number" id="item_new_price" name="item_new_price" required class="form-control" readonly>
                                 </div>
                             </div>
-                       <div class="mt-4">
-                                                               <label for="item_quantity">Item Measurement(eg. G/Kg):</label>
+ <div class="row">
+                                <div class="col-lg-6">                                                               <label for="item_quantity">Item Measurement(eg. G/Kg):</label>
 
     <select required name="weight_units">
         <option value="" disabled selected>Select One</option>
@@ -113,7 +113,11 @@
     </select>
 
 </div>
-
+ <div class="col-lg-6">
+                                    <label for="item_new_price">Making Price:</label>
+                                    <input type="number" id="mp" name="mp" required class="form-control" >
+                                </div>
+                            </div>
                             <div class="mt-4">
                                 <button type="submit" class="btn btn-primary">Add Item</button>
                                 <a href="{% url 'item_list' %}" class="btn btn-danger">Back</a>

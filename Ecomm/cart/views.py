@@ -25,18 +25,23 @@ class AddToCartAPIView(APIView):
             if not user:
                 return Response({"error": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
 
-            # Get the cart item for the given product and user
-            cart_item, created = Cart.objects.get_or_create(product_id=product, u_id=user)
+            # Get the cart item for the given product and user if it exists, otherwise create it
+            cart_items = Cart.objects.filter(product_id=product, u_id=user)
 
-            if not created:
-                # If the item already exists, increment its quantity and update its price
+            if cart_items.exists():
+                # If the item already exists, choose the first one (or apply your own logic)
+                cart_item = cart_items.first()
                 cart_item.quantity += 1
-                cart_item.price = cart_item.quantity * product.item_new_price  # Update the price based on the current product price
+                cart_item.price = cart_item.quantity * product.item_new_price
             else:
                 # If the item is newly created, set its initial quantity and price
-                cart_item.quantity = 1
-                cart_item.price = product.item_new_price
+                cart_item = Cart.objects.create(product_id=product, u_id=user, quantity=1,
+                                                price=product.item_new_price)
 
+            # Save the cart item
+            cart_item.save()
+
+            # Save the cart item
             cart_item.save()
 
             # Serialize the cart item
@@ -45,9 +50,6 @@ class AddToCartAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-
 class CartDetailsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -115,6 +117,7 @@ class DecreaseQuantity(APIView):
 
                 return Response({"message": "Quantity decreased successfully."}, status=status.HTTP_200_OK)
             else:
+                cart_item.delete()
                 return Response({"error": "Quantity cannot be less than 1."}, status=status.HTTP_400_BAD_REQUEST)
         except Cart.DoesNotExist:
             return Response({"error": "Cart item does not exist."}, status=status.HTTP_404_NOT_FOUND)
@@ -177,48 +180,44 @@ from order.models import Order
 from .models import CartCoupon
 import math
 from walet.models import Walet
+import math
+
 class CartTotalPrice(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
-            # Get the user_id and coupon value from query parameters
+            pick_up = request.query_params.get('pick_up')
+            if pick_up == '1':
+                delivery_charge = 0
+            else:
+                delivery_charge = DeliveryCharge.objects.first().charge
+
             user_id = request.query_params.get('user_id')
 
-            # Check if user_id parameter is provided
             if user_id is None:
                 return Response({"error": "user_id parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Check if user_id is a valid integer
             if not str(user_id).isdigit():
                 return Response({"error": "Valid user_id parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Retrieve all cart items for the specified user_id
             cart_items = Cart.objects.filter(u_id=user_id)
-
-            # Calculate total price by summing the prices of all cart items
             total_price = sum(cart_item.price for cart_item in cart_items)
-            previous_price = total_price  # Initialize with the total price
+            previous_price = total_price
             discounted_price = 0
-
-            # Get today's date
             today_date = date.today()
 
             try:
-                # Attempt to retrieve the CartCoupon object
                 coupon_value_param = CartCoupon.objects.get(user_id=user_id).coupon_code
 
-                # If coupon value is provided in params, attempt to apply it directly
                 if coupon_value_param:
                     try:
-                        # Check if today's date is within the validity period of the coupon
                         coupon = CustomerCoupon.objects.get(
                             coupon=coupon_value_param,
                             start_date__lte=today_date,
                             expire_date__gte=today_date
                         )
 
-                        # Apply coupon discount
                         discounted_price = total_price * (int(coupon.coupon_value) / 100)
                         total_price -= discounted_price
                     except CustomerCoupon.DoesNotExist:
@@ -226,34 +225,29 @@ class CartTotalPrice(APIView):
             except CartCoupon.DoesNotExist:
                 pass
 
-            # Retrieve the wallet value
             try:
                 wallet = Walet.objects.get(user_id=user_id)
-                wallet_value = float(wallet.wallet_value)  # Convert wallet value to float
-                total_price -= wallet_value  # Subtract wallet value from total price
+                wallet_value = float(wallet.wallet_value)
+                total_price -= wallet_value
             except Walet.DoesNotExist:
                 wallet_value = None
 
-            # Retrieve the first delivery charge
-            delivery_charge = DeliveryCharge.objects.first()
-
             if delivery_charge:
-                # Add the delivery charge to the total price
-                total_price += delivery_charge.charge
+                total_price += delivery_charge
 
-            # Ceil the total_price, previous_price, discounted_price, and delivery_charge
             total_price = math.ceil(total_price * 100) / 100
             previous_price = math.ceil(previous_price * 100) / 100
             discounted_price = math.ceil(discounted_price * 100) / 100
             if delivery_charge:
-                delivery_charge.charge = math.ceil(delivery_charge.charge * 100) / 100
+                delivery_charge = math.ceil(delivery_charge * 100) / 100
+            rounded_total_price = math.ceil(total_price)
 
             return Response({
-                "total_price": total_price,
+                "total_price": rounded_total_price,
                 "previous_price": previous_price,
                 "discounted_price": discounted_price,
-                "delivery_charge": delivery_charge.charge if delivery_charge else None,
-                "wallet_value": wallet_value
+                "delivery_charge": delivery_charge if delivery_charge else 0,
+                "wallet_value": wallet_value or 0
             }, status=status.HTTP_200_OK)
 
         except Exception as e:

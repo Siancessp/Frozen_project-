@@ -48,6 +48,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     level = models.PositiveIntegerField(default=1)
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = []
+    # def save(self, *args, **kwargs):
+    #     if not self.walet:
+    #         self.walet = 11.0
+    #     super().save(*args, **kwargs)
     def __str__(self):
         return f"{self.id}"
 

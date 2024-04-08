@@ -17,7 +17,7 @@ User = get_user_model()
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import CustomUserSerializer,ProfileSerializer
+from .serializers import CustomUserSerializer,ProfileSerializer,ProfileUpdateSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 # @api_view(['POST'])
@@ -224,11 +224,25 @@ class ProfileAPI(APIView):
         except CustomUser.DoesNotExist:
             return Response({"error": "User does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = ProfileSerializer(profile, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Extract data from request
+        name = request.data.get('name', "")
+        email = request.data.get('email', "")
+        bio = request.data.get('bio', "")
+        profile_photo = request.FILES.get('profile_photo', "")  # Get the file from request.FILES
+
+        # Update profile fields if provided
+        if name is not None:
+            profile.name = name
+        if email is not None:
+            profile.email = email
+        if bio is not None:
+            profile.bio = bio
+        if profile_photo is not None:
+            profile.profile_photo = profile_photo
+
+
+        profile.save()
+        return Response({"success": "Profile updated successfully"}, status=status.HTTP_200_OK)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status

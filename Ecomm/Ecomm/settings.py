@@ -106,7 +106,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Ecomm.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -124,6 +123,7 @@ import djongo
 #         'NAME': 'test_mongo',  # Specify your database name
 #     }
 # }
+# the real databse one
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',

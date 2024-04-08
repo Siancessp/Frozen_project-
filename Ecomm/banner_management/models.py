@@ -10,7 +10,7 @@ class Banner(models.Model):
     description=models.CharField(max_length=1000)
     add_photo = models.ImageField(upload_to='add_photos/')
     status= models.BooleanField(default=True)
-    category = models.ForeignKey(Catagory, on_delete=models.CASCADE)
+    category = models.ForeignKey(Catagory, on_delete=models.CASCADE,null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
