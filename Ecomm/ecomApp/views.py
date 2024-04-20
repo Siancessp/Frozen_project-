@@ -2,9 +2,98 @@ from django.shortcuts import render
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Otp,CustomUser
+from django.db.models import Sum
+from django.db.models import Count
+from django.utils.timezone import datetime, timedelta
+from django.db.models.functions import TruncDate
+
+
+from django.db.models import Count, Avg
 # Create your views here.
 @login_required(login_url='backend/login')
 def dashboard(request):
+    if request.method == 'GET':
+        order_type = request.GET.get('order_type', None)
+        from_date = request.GET.get('from_date', None)
+        to_date = request.GET.get('to_date', None)
+
+        # Convert date strings to datetime objects if provided
+        if from_date:
+            from_date = datetime.strptime(from_date, '%Y-%m-%d')
+        if to_date:
+            to_date = datetime.strptime(to_date, '%Y-%m-%d')
+
+        # Filter orders based on the provided parameters
+        queryset = Order.objects.all()
+        queryset = queryset.exclude(payment_id="")
+
+        if order_type:
+            queryset = queryset.filter(pick_up=order_type)
+
+        if from_date and to_date:
+            # Add one day to include the end date
+            to_date = to_date + timedelta(days=1)
+            queryset = queryset.filter(created_at__range=(from_date, to_date))
+
+        # Perform aggregation and ordering
+        day_wise_report = queryset.values('order_id', 'created_at', 'total_price') \
+            .annotate(total_amount=Sum('total_price'),
+                      total_items=Count('id'),  # Counting unique items, not order_id occurrences
+                      average_price=Avg('price')) \
+            .order_by('order_id')
+
+        # Convert the queryset to a dictionary for rendering
+        unique_orders = {}
+        total_amounts = {}
+
+        for entry in day_wise_report:
+            order_id = entry['order_id']
+            created_at = entry['created_at'].strftime('%Y-%m-%d')  # Format the datetime
+            total_price = entry['total_price']
+            if order_id not in unique_orders:
+                unique_orders[order_id] = {
+                    'created_at': created_at,
+                    'total_amount': total_price,
+                    'total': total_price,
+                }
+                total_amounts[order_id] = total_price
+            else:
+                unique_orders[order_id]['total_amount'] += total_price
+        total_all_orders = sum(total_amounts.values())        # Convert unique_orders dictionary to a list of dictionaries for rendering
+        day_wise_report = [{'order_id': key, **value} for key, value in unique_orders.items()]
+
+        return render(request, 'backend/dashboard.html', {'day_wise_report': day_wise_report,'total_all_orders': total_all_orders})
+    if request.method == 'GET':
+        from_date = request.GET.get('from_date', None)
+        to_date = request.GET.get('to_date', None)
+        product_id = request.GET.get('product_id', None)  # Get product_id parameter
+
+        # Convert date strings to datetime objects if provided
+        if from_date:
+            from_date = datetime.strptime(from_date, '%Y-%m-%d')
+        if to_date:
+            to_date = datetime.strptime(to_date, '%Y-%m-%d')
+
+        # Filter orders based on the provided parameters
+        queryset = Order.objects.exclude(payment_id="")
+
+        if from_date and to_date:
+            # Add one day to include the end date
+            to_date = to_date + timedelta(days=1)
+            queryset = queryset.filter(created_at__range=(from_date, to_date))
+
+        if product_id:
+            queryset = queryset.filter(product_id=product_id)  # Filter by product_id
+
+        # Aggregate total order amount for each product
+        itemwise_report = queryset.values('product_id', 'product_id__title') \
+            .annotate(total_order_amount=Sum(F('price') * F('quantity')))
+
+        products = Item.objects.all()
+
+        return render(request, 'backend/dashboard.html',
+                      {'itemwise_report': itemwise_report, 'products': products})
+
     return render(request,'backend/dashboard.html')
 @login_required(login_url='backend/login')
 def charts(request):
@@ -142,7 +231,7 @@ from django.shortcuts import render
 
 @login_required(login_url='backend/login')
 def catagory(request):
-    catagoryapp=Catagory.objects.all()
+    catagoryapp=Catagory.objects.all().order_by('-id')
 
     context={
         'banform': catagoryapp
@@ -436,3 +525,131 @@ def update_charge(request, myid):
     productapp.save()
 
     return redirect('chargeapp')
+@login_required(login_url='backend/login')
+def stock(request):
+    catagoryapp=Stock.objects.all()
+
+    context={
+        'banform': catagoryapp
+
+    }
+
+    return render(request,'backend/inventory_list.html',context)
+@login_required(login_url='backend/login')
+def edit_stock(request, myid):
+    sel_proform=Stock.objects.get(id=myid)
+    pro = Stock.objects.all()
+    # categories = Catagory.objects.filter(status=True)
+    context = {
+
+        'pro': pro,
+        'item':sel_proform,
+
+    }
+    return render(request,'backend/edit_inventory.html',context)
+@login_required(login_url='backend/login')
+def update_stock(request,stock_id):
+    if request.method == 'POST':
+        openingstock = request.POST.get('openingstock')
+
+        try:
+            stock = Stock.objects.get(id=stock_id)
+            stock.openingstock = openingstock
+            stock.save()
+
+            messages.success(request, 'Stock updated successfully.')
+        except Stock.DoesNotExist:
+            messages.error(request, 'Stock does not exist.')
+        except Exception as e:
+            messages.error(request, str(e))
+
+    return redirect('stock')
+@login_required(login_url='backend/login')
+def update_all_stock(request):
+    if request.method == 'POST':
+
+        for key, value in request.POST.items():
+            if key.startswith('openingstock_'):
+                stock_id = key.split('_')[1]
+                try:
+                    stock = get_object_or_404(Stock, pk=stock_id)
+                    stock.openingstock = value
+                    stock.save()
+                except Exception as e:
+                    # Handle exceptions as needed
+                    pass
+    return redirect('stock')
+@login_required(login_url='backend/login')
+def allstock(request):
+    catagoryapp=Stock.objects.all()
+
+    context={
+        'banform': catagoryapp
+
+    }
+
+    return render(request,'backend/allinventory_list.html',context)
+from rest_framework import generics
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
+from .models import Stock
+from .serializers import StockSerializer
+
+class StockListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        return StockSerializer
+
+    def get_queryset(self):
+        queryset = Stock.objects.all()
+        product_id = self.request.query_params.get('product_id')
+        if product_id:
+            queryset = queryset.filter(item_id=product_id)
+        return queryset
+
+
+from order.models import Order
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+def count_pending_orders():
+    """
+    Counts the number of pending orders.
+    """
+    pending_orders_count = Order.objects.filter(status='1').count()
+
+    return pending_orders_count
+from django.db.models import Q
+@csrf_exempt  # Add this decorator if you're not handling CSRF tokens for this view
+def pending_orders_count(request):
+    """
+    View to return the count of pending orders.
+    """
+    pending_orders_count = Order.objects.filter(status='1').exclude(Q(payment_id=None) | Q(payment_id='')).values('order_id').distinct().count()
+    data = {'pending_orders_count': pending_orders_count}
+    return JsonResponse(data)
+
+
+def render_order_dropdown(request):
+    """
+    Renders order details in a dropdown menu.
+    """
+    # Fetch the orders
+    orders = Order.objects.filter(status='1')[:5]  # Fetch the first 5 orders
+
+    # Serialize order details
+    serialized_orders = [{'id': order.id, 'status': order.status, 'created_at': order.created_at} for order in orders]
+
+    # Prepare JSON response data
+    data = {'orders': serialized_orders}
+
+    # Return JSON response
+    return JsonResponse(data)
+
+
+
+
+
+
+

@@ -2,11 +2,11 @@ from django.shortcuts import render
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Item
-from ecomApp.models  import Catagory
+from ecomApp.models  import Catagory,Stock
 from django.db.models import Q# Create your views here.
 @login_required(login_url='backend/login')
 def item_list(request):
-    items = Item.objects.all()
+    items = Item.objects.all() .order_by('-created_at')
 
     context = {
         'items': items
@@ -17,11 +17,13 @@ def item_list(request):
 def add_item(request):
     if request.method == "POST":
         title=request.POST.get('title')
-        weight_units=request.POST.get('weight_units')
+        # weight_units=request.POST.get('weight_units')
         description=request.POST.get('description')
         item_photo = request.FILES.get('item_photo')
-        item_quantity = request.POST.get('item_quantity')
+        # item_quantity = request.POST.get('item_quantity')
         item_old_price = request.POST.get('item_old_price')
+        item_new_price = request.POST.get('item_new_price')
+
         discount = request.POST.get('discount')
         mp = request.POST.get('mp')
 
@@ -31,17 +33,18 @@ def add_item(request):
         most_popular = request.POST.get('most_popular') == 'on'
 
         # Calculate item_new_price based on item_old_price and discount
-        item_new_price = float(item_old_price) * (1 - float(discount) / 100)
-
-
+        # item_new_price = float(item_old_price) * (1 - float(discount) / 100)
+        mp = round(float(mp), 2)
+        item_new_price=round(float(item_new_price),2)
+        item_old_price=round(float(item_old_price),2)
         # Create the item object
         item = Item.objects.create(
             title=title,
-            item_measurement=weight_units,
+            # item_measurement=weight_units,
             description=description,
             item_photo=item_photo,
             makingprice=mp,
-            item_quantity=item_quantity,
+            # item_quantity=item_quantity,
             item_old_price=item_old_price,
             discount=discount,
             item_new_price=item_new_price,
@@ -51,6 +54,16 @@ def add_item(request):
             recommended=recommended,
             deal_of_the_day=deal_of_the_day
         )
+        Stock.objects.create(openingstock=0, item_id=item)
+        # existing_items = Item.objects.all()
+        #
+        # for item in existing_items:
+        #     # Check if a Stock entry already exists for this item
+        #     existing_stock = Stock.objects.filter(item_id=item).exists()
+        #
+        #     # If a Stock entry doesn't exist, create one with opening stock = 0
+        #     if not existing_stock:
+        #         Stock.objects.create(openingstock=1, item_id=item)
         return redirect('item_list')
 
     # If the request method is not POST, render the form
@@ -117,10 +130,10 @@ def update_item(request, item_id):
         if item_photo:
             edit_item.item_photo = item_photo
         edit_item.title = request.POST.get('title')
-        edit_item.item_measurement = request.POST.get('item_measurement')
+        # edit_item.item_measurement = request.POST.get('item_measurement')
 
         edit_item.description = request.POST.get('description')
-        edit_item.item_quantity = request.POST.get('item_quantity')
+        # edit_item.item_quantity = request.POST.get('item_quantity')
         edit_item.item_old_price = request.POST.get('item_old_price')
         edit_item.discount = request.POST.get('discount')
         edit_item.item_new_price = request.POST.get('item_new_price')
@@ -146,28 +159,29 @@ def edit_item(request, item_id):
         'categories':categories
     }
     return render(request, 'backend/edit_item.html', context)
-
+from ecomApp.models import Stock
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Item
 from .serializers import ItemSerializer,CategorySerializer
 
+from django.db.models import F, Sum
+
 class DealOfTheDayAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        items = Item.objects.all()
-        items = [item for item in items if item.deal_of_the_day and item.status]
+        items = Item.objects.filter(deal_of_the_day=True, status=True, stock__openingstock__gt=0)
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
+
 
 class RecommendedAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        items = Item.objects.all()
-        items = [item for item in items if item.recommended and item.status]
+        items = Item.objects.filter(recommended=True, status=True, stock__openingstock__gt=0)
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
 
@@ -175,11 +189,9 @@ class MostPopularAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        items = Item.objects.all()
-        items = [item for item in items if item.most_popular and item.status]
+        items = Item.objects.filter(most_popular=True, status=True, stock__openingstock__gt=0)
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
-
 class AllProduct(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -251,8 +263,7 @@ class DealOfTheDayfiveAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        items = Item.objects.all()
-        items = [item for item in items if item.deal_of_the_day and item.status][:4]
+        items = Item.objects.filter(deal_of_the_day=True, status=True, stock__openingstock__gt=0)[:4]
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
 
@@ -260,8 +271,7 @@ class RecommendedfiveAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        items = Item.objects.all()
-        items = [item for item in items if item.recommended and item.status][:4]
+        items = Item.objects.filter(recommended=True, status=True, stock__openingstock__gt=0)[:4]
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
 
@@ -269,11 +279,9 @@ class MostPopularfiveAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        items = Item.objects.all()
-        items = [item for item in items if item.most_popular and item.status][:4]
+        items = Item.objects.filter(most_popular=True, status=True, stock__openingstock__gt=0)[:4]
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
-
 class AllfiveProduct(APIView):
     permission_classes = [IsAuthenticated]
 

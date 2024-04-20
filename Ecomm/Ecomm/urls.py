@@ -33,6 +33,9 @@ urlpatterns = [
     path('', include('order.urls')),
     path('', include('walet.urls')),
     path('', include('cart.urls')),
+    path('', include('report.urls')),
+    path('', include('notification.urls')),
+    path('', include('chart.urls')),
 
 ]
 if settings.DEBUG:

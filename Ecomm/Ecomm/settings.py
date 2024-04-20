@@ -57,7 +57,10 @@ INSTALLED_APPS = [
     'jazzmin',
     'banner_management',
     'cart',
-    'walet'
+    'walet',
+    'report',
+    'notification',
+    'chart'
 
 
 
@@ -109,12 +112,12 @@ WSGI_APPLICATION = 'Ecomm.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 import djongo
 
 # DATABASES = {
@@ -124,20 +127,20 @@ import djongo
 #     }
 # }
 # the real databse one
-DATABASES = {
-    'default': {
-        'ENGINE': 'djongo',
-        'NAME': 'testdb2',
-        'ENFORCE_SCHEMA': False,  # Enforce schema validation
-        'CLIENT': {
-            'host': 'mongodb+srv://user:user@cluster0.prxlwvh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
-            'port': 27017,  # Default MongoDB port
-            'username': 'user',
-            'password': 'user'
-
-        },
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'djongo',
+#         'NAME': 'testdb2',
+#         'ENFORCE_SCHEMA': False,  # Enforce schema validation
+#         'CLIENT': {
+#             'host': 'mongodb+srv://user:user@cluster0.prxlwvh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
+#             'port': 27017,  # Default MongoDB port
+#             'username': 'user',
+#             'password': 'user'
+#
+#         },
+#     }
+# }
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'djongo',

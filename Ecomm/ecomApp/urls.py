@@ -47,5 +47,16 @@ urlpatterns = [
     path('backend/chargeapp/edit_item/<int:myid>/', edit_charge, name="edit_charge"),
     path('backend/chargeapp/update_item/<int:myid>/', update_charge, name="update_charge"),
 
+    path('backend/inventory_list/', stock, name="stock"),
+    path('api/stock/', StockListAPIView.as_view(), name='stock-list'),
+    path('backend/stock/edit_item/<int:myid>/', edit_stock, name="edit_stock"),
+    path('backend/stock/update_item/<int:stock_id>/', update_stock, name="update_stock"),
+    path('backend/stock/update/', update_all_stock, name='update_all_stock'),
+    path('backend/stock/all_edit_item/', allstock, name="allstock"),
+    path('pending-orders/count/', pending_orders_count, name='pending_orders_count'),
+    path('orders/dropdown/', render_order_dropdown, name='order_dropdown'),
+
+
+
 
 ]

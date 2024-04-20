@@ -87,6 +87,7 @@ class LoginView(APIView):
     def post(self, request):
         phone_number = request.data.get('phone_number')
         password = request.data.get('password')
+        registration_id = request.data.get('registration_id','')
 
         # Authenticate the user using the provided credentials
         user = authenticate(request, phone_number=phone_number, password=password)
@@ -94,7 +95,10 @@ class LoginView(APIView):
         if user is not None:
             # Authentication successful, generate tokens
             refresh = RefreshToken.for_user(user)
-
+            if registration_id:
+                user_profile = CustomUser.objects.get(id=user.id)
+                user_profile.registration_id = registration_id
+                user_profile.save()
             response_data = {
                 'user_id':user.id,
                 'status': 'success',

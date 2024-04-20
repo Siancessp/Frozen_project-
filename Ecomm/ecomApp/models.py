@@ -30,6 +30,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     id= models.AutoField(primary_key=True)
     phone_number = models.CharField(max_length=15, unique=True)  # You can adjust the max_length as needed.
     name = models.CharField(max_length=255,null=True)
+    registration_id = models.CharField(max_length=255,null=True)
+
     bio=models.CharField(max_length=255,default='')
     profile_photo=models.ImageField(upload_to='videos/', null=True, blank=True)
     referral_code = models.CharField(max_length=10, blank=True, null=True)
@@ -39,7 +41,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     created_date=models.DateField(auto_now_add=True)
     blocked_users = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='users_blocked_by')
     status = models.IntegerField(default=1)
-    walet=models.FloatField()
+    walet=models.FloatField(default=11)
     email = models.EmailField()
     # referral_link = models.CharField(max_length=255, blank=True, null=True, unique=True)
     # slug = models.CharField(max_length=15, blank=True,unique=True, null=True)
@@ -75,12 +77,7 @@ class Otp(models.Model):
     email_verified = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, blank=True)
     otp_created_at = models.DateTimeField(null=True, blank=True)
-class Stock(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    openingstock=models.TextField()
-    item_id=models.TextField()
-  #  pro_id= models.ForeignKey(Product, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
+
 
 class Catagory(models.Model):
     id = models.AutoField(primary_key=True)
@@ -123,3 +120,10 @@ class DeliveryCharge(models.Model):
     id = models.AutoField(primary_key=True)
     charge =  models.IntegerField()
     status= models.BooleanField(default=True)
+from menu_management.models import Item
+class Stock(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    openingstock=models.IntegerField(default=0)
+    item_id=models.ForeignKey(Item,on_delete=models.CASCADE)
+  #  pro_id= models.ForeignKey(Product, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)

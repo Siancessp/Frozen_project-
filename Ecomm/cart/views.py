@@ -71,6 +71,7 @@ class CartDetailsAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+from ecomApp.models import Stock
 class IncreaseQuantity(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -80,21 +81,25 @@ class IncreaseQuantity(APIView):
 
             # Retrieve the cart item
             cart_item = Cart.objects.get(id=cart_id)
+            stock=Stock.objects.get(item_id=cart_item.product_id)
+            # Check if quantity is less than opening stock
+            if cart_item.quantity < stock.openingstock:
+                # Increment quantity
+                cart_item.quantity += 1
+                cart_item.save()
 
-            # Increment quantity
-            cart_item.quantity += 1
-            cart_item.save()
+                # Update total price
+                cart_item.price = cart_item.product_id.item_new_price * cart_item.quantity
+                cart_item.save()
 
-            # Update total price
-            cart_item.price = cart_item.product_id.item_new_price * cart_item.quantity
-            cart_item.save()
-
-            return Response({"message": "Quantity increased successfully."}, status=status.HTTP_200_OK)
+                return Response({"message": "Quantity increased successfully."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "Quantity cannot be increased beyond opening stock."},
+                                status=status.HTTP_200_OK)
         except Cart.DoesNotExist:
             return Response({"error": "Cart item does not exist."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
 class DecreaseQuantity(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -281,3 +286,90 @@ def send_coupon(request):
             return JsonResponse({'error': 'User not found'}, status=404)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+
+class IncreaseQuantityMain(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            product_id = request.data.get('product_id')
+            user_id = request.data.get('user_id')
+
+            # Retrieve the cart item
+            cart_item = Cart.objects.get(product_id=product_id, u_id=user_id)
+            stock = Stock.objects.get(item_id=product_id)
+
+            # Check if quantity is less than opening stock
+            if cart_item.quantity < stock.openingstock:
+                # Increment quantity
+                cart_item.quantity += 1
+                cart_item.save()
+
+                # Update total price
+                cart_item.price = cart_item.product_id.item_new_price * cart_item.quantity
+                cart_item.save()
+
+                return Response({"message": "Quantity increased successfully."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "Quantity cannot be increased beyond opening stock."},
+                                status=status.HTTP_200_OK)
+        except Cart.DoesNotExist:
+            return Response({"error": "Cart item does not exist."}, status=status.HTTP_404_NOT_FOUND)
+        except Stock.DoesNotExist:
+            return Response({"error": "Stock information not available for the product."},
+                            status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+class DecreaseQuantityMain(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            product_id = request.data.get('product_id')
+            user_id = request.data.get('user_id')
+
+            # Retrieve the cart item
+            cart_item = Cart.objects.get(product_id=product_id, u_id=user_id)
+
+            # Ensure quantity is greater than 1 before decrementing
+            if cart_item.quantity > 1:
+                # Decrement quantity
+                cart_item.quantity -= 1
+                cart_item.save()
+
+                # Update total price
+                cart_item.price = cart_item.product_id.item_new_price * cart_item.quantity
+                cart_item.save()
+
+                return Response({"message": "Quantity decreased successfully."}, status=status.HTTP_200_OK)
+            else:
+                cart_item.delete()
+                return Response({"error": "Quantity cannot be less than 1." ,"status":0}, status=status.HTTP_200_OK)
+        except Cart.DoesNotExist:
+            return Response({"error": "Cart item does not exist." ,"status":0}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+class CartDetailsMainAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Get the user_id from query parameters
+            user_id = request.query_params.get('user_id')
+            product_id = request.query_params.get('product_id')
+
+            # Validate user_id parameter
+            if not user_id:
+                return Response({"error": "user_id parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Retrieve all cart items for the specified user_id
+            cart_items = Cart.objects.filter(u_id=user_id,product_id=product_id)
+
+            # Serialize the cart items
+            serializer = CartGetSerializer(cart_items, many=True)
+
+            return Response(serializer.data[0], status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

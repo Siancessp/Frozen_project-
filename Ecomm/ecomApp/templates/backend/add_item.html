@@ -34,7 +34,7 @@
                                 </div>
                                 <div class="col-lg-6">
                                     <label for="description">Description:</label>
-                                    <input type="text" id="description" name="description" required class="form-control">
+                                    <input type="text" id="description" name="description"  class="form-control">
                                 </div>
                             </div>
                             <hr>
@@ -89,30 +89,30 @@
                                 </div>
                                 <div class="col-lg-6">
                                     <label for="discount">Discount (%):</label>
-                                    <input type="number" id="discount" name="discount" required class="form-control">
+                                    <input type="number" id="discount" name="discount" required class="form-control" readonly>
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-lg-6">
-                                    <label for="item_quantity">Item Quantity:</label>
-                                    <input type="number" id="item_quantity" name="item_quantity" required class="form-control">
-                                </div>
+<!--                                <div class="col-lg-6">-->
+<!--                                    <label for="item_quantity">Item Quantity:</label>-->
+<!--                                    <input type="number" id="item_quantity" name="item_quantity" required class="form-control">-->
+<!--                                </div>-->
                                 <div class="col-lg-6">
                                     <label for="item_new_price">Offer Price:</label>
-                                    <input type="number" id="item_new_price" name="item_new_price" required class="form-control" readonly>
+                                    <input type="number" id="item_new_price" name="item_new_price" required class="form-control" >
                                 </div>
                             </div>
  <div class="row">
-                                <div class="col-lg-6">                                                               <label for="item_quantity">Item Measurement(eg. G/Kg):</label>
+<!--                                <div class="col-lg-6">                                                               <label for="item_quantity">Item Measurement(eg. G/Kg):</label>-->
 
-    <select required name="weight_units">
-        <option value="" disabled selected>Select One</option>
-        <option value="kg" class="form-control">kg</option>
-        <option value="gm" class="form-control">gm</option>
-        <option value="packet" class="form-control">packet</option>
-    </select>
+<!--    <select required name="weight_units">-->
+<!--        <option value="" disabled selected>Select One</option>-->
+<!--        <option value="kg" class="form-control">kg</option>-->
+<!--        <option value="gm" class="form-control">gm</option>-->
+<!--        <option value="packet" class="form-control">packet</option>-->
+<!--    </select>-->
 
-</div>
+<!--</div>-->
  <div class="col-lg-6">
                                     <label for="item_new_price">Making Price:</label>
                                     <input type="number" id="mp" name="mp" required class="form-control" >
@@ -137,27 +137,31 @@
   </div>
 
 <script>
-    // Function to calculate item_new_price
-    function calculateItemNewPrice() {
-        // Get values from input fields
-        var itemOldPrice = parseFloat(document.getElementById('item_old_price').value);
-        var discount = parseFloat(document.getElementById('discount').value);
+   // Function to calculate discount
+function calculateDiscount() {
+    // Get values from input fields
+    var itemOldPrice = parseFloat(document.getElementById('item_old_price').value);
+    var itemNewPrice = parseFloat(document.getElementById('item_new_price').value);
 
-        // Calculate item_new_price
-        var itemNewPrice = itemOldPrice * (1 - discount / 100);
+    // Calculate discount
+    var discount = ((itemOldPrice - itemNewPrice) / itemOldPrice) * 100;
 
-        // Update the value in the item_new_price input field
-        document.getElementById('item_new_price').value = itemNewPrice.toFixed(2);
-    }
+    // Round off the discount to the nearest integer
+    discount = Math.round(discount);
 
-    // Add event listeners to trigger the calculation
-    document.getElementById('item_old_price').addEventListener('input', calculateItemNewPrice);
-    document.getElementById('discount').addEventListener('input', calculateItemNewPrice);
+    // Update the value in the discount input field
+    document.getElementById('discount').value = discount;
+}
 
-    // Call the calculation function when the page is fully loaded
-    window.addEventListener('load', function() {
-        calculateItemNewPrice();
-    });
+// Add event listeners to trigger the calculation
+document.getElementById('item_old_price').addEventListener('input', calculateDiscount);
+document.getElementById('item_new_price').addEventListener('input', calculateDiscount);
+
+// Call the calculation function when the page is fully loaded
+window.addEventListener('load', function() {
+    calculateDiscount();
+});
+
 </script>
 <script>
         function previewPhoto(event) {

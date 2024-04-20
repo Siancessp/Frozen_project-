@@ -14,6 +14,8 @@ from rest_framework.views import APIView
 from ecomApp.models import CustomUser
 from ecomApp.models import Catagory
 from ecomApp.models import Product
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 #for noww...
 class OrderView(APIView):
     def post(self, request):
@@ -24,6 +26,7 @@ class OrderView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@login_required(login_url='backend/login')
 def orderlist(request):
     # Fetch all orders
     orders = Order.objects.all().order_by('-created_at')
@@ -45,7 +48,7 @@ def orderlist(request):
     }
 
     return render(request, 'backend/orderlist.html', context)
-
+@login_required(login_url='backend/login')
 def confirmorderlist(request):
     ordercon=Order.objects.filter(Q(status=2) | Q(status=3) | Q(status=4))
     context={
@@ -53,6 +56,7 @@ def confirmorderlist(request):
 
     }
     return render(request,'backend/confirmorderlist.html',context)
+@login_required(login_url='backend/login')
 def view_item(request, myid):
      sel_ordform = Order.objects.filter(order_id=myid)
      ord = Order.objects.all()
@@ -64,43 +68,43 @@ def view_item(request, myid):
     }
      return render(request, 'backend/orderview.html', context)
 
-
+@login_required(login_url='backend/login')
 def suspend_user(request, catagory_id):
     order = get_object_or_404(Order, id=catagory_id)
     order.status = 2  # Change status to "confirm"
     order.save()
     return redirect('orderapp:activate_catagory', catagory_id=catagory_id)
-
+@login_required(login_url='backend/login')
 def cancel(request, catagory_id):
     order = get_object_or_404(Order, id=catagory_id)
     order.status = 5  # Change status to "cancel"
     order.save()
     return redirect('orderapp:returnrequest', catagory_id=catagory_id)
-
+@login_required(login_url='backend/login')
 def activate_catagory(request, catagory_id):
     order = get_object_or_404(Order, id=catagory_id)
     order.status = 3  # Change status to "pickup"
     order.save()
     return redirect('orderapp:deactivate_catagory', catagory_id=catagory_id)
-
+@login_required(login_url='backend/login')
 def deactivate_catagory(request, catagory_id):
     order = get_object_or_404(Order, id=catagory_id)
     order.status = 4  # Change status to "delivered"
     order.save()
     return redirect('orderapp:deliver', catagory_id=catagory_id)
-
+@login_required(login_url='backend/login')
 def deliver(request, catagory_id):
     order = get_object_or_404(Order, id=catagory_id)
     order.status = 4  # Change status to "delivered"
     order.save()
     return redirect('orderapp:index')  # Redirect to main page after delivery
-
+@login_required(login_url='backend/login')
 def returnrequest(request, catagory_id):
     order = get_object_or_404(Order, id=catagory_id)
     order.status = 6  # Change status to "return request"
     order.save()
     return redirect('orderapp/returnaccepted', catagory_id=catagory_id)
-
+@login_required(login_url='backend/login')
 def returnaccepted(request, catagory_id):
     order = get_object_or_404(Order, id=catagory_id)
     order.status = 7  # Change status to "return accepted"
@@ -128,7 +132,7 @@ def returnaccepted(request, catagory_id):
 
 
 from walet.models import Walet
-
+from ecomApp.models import Stock
 import random
 import string
 from cart.models import Cart
@@ -275,6 +279,15 @@ def verify_payment(request):
                 order.status = 1  # Set status to success
                 order.order_item_id = order_item_id
                 order.save()
+
+                # stock = Stock.objects.select_for_update().filter(item_id=order.product_id).first()
+                # stock.openingstock -= 1
+                # stock.save()
+                product_id = order.product_id
+                quantity = order.quantity
+                stock = Stock.objects.select_for_update().get(item_id=product_id)
+                stock.openingstock -= quantity
+                stock.save()
             user_id = orders.first().user_id.id
             cart_items = Cart.objects.filter(u_id=user_id, status='Active')
             cart_items.delete()
@@ -293,12 +306,10 @@ from rest_framework import generics
 from rest_framework.response import Response
 from .models import Order
 from .serializers import GroupedOrderSerializer
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Order
 from .serializers import OrderSerializer
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Order
