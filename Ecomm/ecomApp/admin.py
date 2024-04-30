@@ -2,13 +2,13 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser, Otp,CustomerCoupon,Product,Catagory,Stock
 class CustomUserAdmin(UserAdmin):
-    list_display = ('phone_number','status', 'name','registration_id','walet', 'is_active', 'is_staff')
+    list_display = ('phone_number','otp_value','status', 'name','registration_id','walet', 'is_active', 'is_staff')
     list_filter = ('is_active', 'is_staff')
     search_fields = ('phone_number', 'name', 'referral_code')
     ordering = ('phone_number',)
 
     fieldsets = (
-        (None, {'fields': ('phone_number', 'email', 'password','status')}),
+        (None, {'fields': ('phone_number', 'email','otp_value', 'password','status')}),
         ('Personal Info', {'fields': ('name', 'level','profile_photo','bio','walet','registration_id')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
     )
@@ -16,7 +16,7 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('phone_number', 'name', 'email','referral_code', 'password1', 'password2'),
+            'fields': ('phone_number','otp_value', 'name', 'email','referral_code', 'password1', 'password2'),
         }),
     )
 

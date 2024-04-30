@@ -5,11 +5,11 @@ from ecomApp.models import CustomUser
 #     phone_number = serializers.CharField()
 #     otp = serializers.CharField()
 class CustomUserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(min_length=8, write_only=True)
+    # password = serializers.CharField(min_length=8, write_only=True)
 
     class Meta:
         model = CustomUser
-        fields = ('phone_number',  'password','name')
+        fields = ('phone_number',  'otp_value','name')
 
     def create(self, validated_data):
         # Set the walet attribute to 0.0 in the validated_data dictionary

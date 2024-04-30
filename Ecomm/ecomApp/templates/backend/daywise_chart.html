@@ -36,7 +36,7 @@
 
     <form id="search_form" method="GET" action="{% url 'daywise_chart' %}">
     <div class="form-row">
-        <div class="form-group col-md-4">
+        <div class="form-group col-md-3">
             <label for="order_type">Order Type:</label>
             <select class="form-control" id="order_type" name="order_type">
                 <option value="" {% if not request.GET.order_type %}selected{% endif %}>--Select--</option>
@@ -44,16 +44,20 @@
                 <option value="1" {% if request.GET.order_type == '1' %}selected{% endif %}>Pickup</option>
             </select>
         </div>
-        <div class="form-group col-md-4">
+        <div class="form-group col-md-3">
             <label for="from_date">From Date:</label>
             <input type="date" class="form-control" id="from_date" name="from_date" value="{{ request.GET.from_date }}">
         </div>
-        <div class="form-group col-md-4">
+        <div class="form-group col-md-3">
             <label for="to_date">To Date:</label>
             <input type="date" class="form-control" id="to_date" name="to_date" value="{{ request.GET.to_date }}">
         </div>
+         <div class="form-group col-md-3">
+
+              <button type="submit" class=" btn btn-success">Search</button>
+
+        </div>
     </div>
-    <button type="submit" class="btn btn-primary">Search</button>
 </form>
 
                  <div class="card card-primary">
@@ -121,7 +125,7 @@
     // Extracting dates and orders from Django template variable
     var dates = [];
     var orders = [];
-    {% for entry in day_wise_report %}
+                    {% for entry in day_wise_report %}
         dates.push("{{ entry.created_at }}");
         orders.push({{ entry.total }});
     {% endfor %}

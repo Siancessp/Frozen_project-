@@ -25,6 +25,8 @@ class OrderView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+import pytz
+from django.utils import timezone
 
 @login_required(login_url='backend/login')
 def orderlist(request):
@@ -33,6 +35,9 @@ def orderlist(request):
 
     # Create a dictionary to store orders grouped by their order_id
     orders_dict = {}
+    local_tz = pytz.timezone('Asia/Kolkata')
+    for order in orders_dict.values():
+        order.created_at = order.created_at.astimezone(local_tz)
 
     # Iterate over orders and group them by their order_id
     for order in orders:
@@ -151,6 +156,7 @@ from django.conf import settings
 from django.http import JsonResponse, HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
+from notification.views import SendNotificationAPI  # Import the SendNotificationAPI class
 
 from decimal import Decimal
 from rest_framework.permissions import IsAuthenticated
@@ -168,11 +174,46 @@ def update_status(request, id):
             return redirect(request.META.get('HTTP_REFERER', 'fallback_url'))
 
         order = Order.objects.get(id=id)
-        order.status = selected_status
 
-        # Convert amount, price, and total_price to Decimal
+        # Update status for each order
+        order_id = order.order_id
 
-        order.save()
+        # Retrieve all orders with the same order_id
+        orders_to_update = Order.objects.filter(order_id=order_id)
+
+        # Update status for each order
+        for order_id in orders_to_update:
+            order_id.status = selected_status
+            order_id.save()
+        # Send notification to the user if the status has changed
+        if selected_status != 1:
+            uid=CustomUser.objects.get(id=order.user_id.id)
+            registration_id = uid.registration_id  # Assuming you have a User model associated with the order
+            if selected_status == 2:
+                title = "Order Confirmed"
+                message = "Your order has been confirmed."
+                SendNotificationAPI().send_notification(registration_id, title, message)
+
+            elif selected_status == 3:
+                title = "Order Picked Up"
+                message = "Congrats! Your order has been picked up from FrozenWala Store Ruby Tower Jogeswari West, Mumbai, Maharashtra, India, 400102."
+                SendNotificationAPI().send_notification(registration_id, title, message)
+
+            elif selected_status == 4:
+                title = "Order Delivered"
+                message = "Your order has been delivered successfully."
+                SendNotificationAPI().send_notification(registration_id, title, message)
+
+            elif selected_status == 5:
+                title = "Order Canceled"
+                message = "Sorry! Your order has been canceled due to some internal reason."
+                SendNotificationAPI().send_notification(registration_id, title, message)
+
+            elif selected_status == 7:
+                title = "Return Request Accepted"
+                message = "Your return request has been accepted by the store."
+                SendNotificationAPI().send_notification(registration_id, title, message)
+
         messages.success(request, 'Status updated successfully!')
 
     return redirect(request.META.get('HTTP_REFERER', 'fallback_url'))  # Replace with your actual redirect URL
@@ -297,6 +338,17 @@ def verify_payment(request):
             cart_walet=Walet.objects.filter(user_id=user_id)
             if cart_walet:
                 cart_walet.delete()
+
+            alluser = CustomUser.objects.get(id=user_id)
+
+            # Get the registration_id of the user
+            registration_id = alluser.registration_id
+            title = "Order Placed Successfully!"
+            message = "Your order has been successfully placed at FrozenwalaStore."
+            SendNotificationAPI().send_notification(registration_id, title, message)
+
+
+
             return JsonResponse({'message': 'Payment successful'}, status=200)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
@@ -391,9 +443,9 @@ class OrderDetailsAPIView(APIView):
                     "product_id": order.product_id.id,
                     "name": order.product_id.title,
                     "description": order.product_id.description,
-                    "item_photo": order.product_id.item_photo.url,
+                    # "item_photo": order.product_id.item_photo.url,
                     "item_quantity": order.quantity,
-                    "item_measurement": order.product_id.item_measurement,
+                    # "item_measurement": order.product_id.item_measurement,
                     "item_old_price": order.product_id.item_old_price,
                     "discount": order.product_id.discount,
                     "item_new_price": order.product_id.item_new_price,
@@ -427,6 +479,8 @@ class OrderDetailsAPIView(APIView):
                         "country": order.country,
                         "zip_code": order.zip_code,
                         "delivery_time": order.delivery_time,
+                        "wallet": order.walet_value,
+
                         # "order_item_id": order.order_item_id
                     }
                     order_details.append(order_detail)
@@ -437,6 +491,7 @@ class OrderDetailsAPIView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 from django.http import JsonResponse, HttpResponse
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph
@@ -483,8 +538,11 @@ def generate_invoice(request):
                   styles['Normal']))
     elements.append(Paragraph(f'Delivery Time: {order.delivery_time}', styles['Normal']))
     elements.append(Paragraph(f'Discounted Price: {order.dicounted_price}', styles['Normal']))
+    elements.append(Paragraph(f'Wallet Discounted Price: {order.walet_value}', styles['Normal']))
+
     elements.append(Paragraph(f'Previous Price: {order.previous_price}', styles['Normal']))
     elements.append(Paragraph(f'Delivery Price: {order.delivery_price}', styles['Normal']))
+    elements.append(Paragraph(f'Total Price: {order.total_price}', styles['Normal']))
 
     # Fetch order details (assuming they are stored in the Order model, adjust as needed)
     # order = Order.objects.get(order_id=order_id)
@@ -498,7 +556,7 @@ def generate_invoice(request):
         items_data.append([ order_item.product_id.title, order_item.quantity, order_item.price,
                            order_item.total_price])
 
-    items_table = Table(items_data, colWidths=[100, 200, 100, 100, 100])
+    items_table = Table(items_data, colWidths=[300, 50, 100, 100, 100])
     items_table.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
                                      ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                                      ('ALIGN', (0, 0), (-1, -1), 'CENTER'),

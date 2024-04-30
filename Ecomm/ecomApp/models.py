@@ -28,10 +28,12 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     id= models.AutoField(primary_key=True)
+    otp_value = models.CharField(max_length=6, blank=True)
+
     phone_number = models.CharField(max_length=15, unique=True)  # You can adjust the max_length as needed.
     name = models.CharField(max_length=255,null=True)
     registration_id = models.CharField(max_length=255,null=True)
-
+    # otp=models.CharField(max_length=6,null=True)
     bio=models.CharField(max_length=255,default='')
     profile_photo=models.ImageField(upload_to='videos/', null=True, blank=True)
     referral_code = models.CharField(max_length=10, blank=True, null=True)
@@ -77,7 +79,7 @@ class Otp(models.Model):
     email_verified = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, blank=True)
     otp_created_at = models.DateTimeField(null=True, blank=True)
-
+    phone_number=models.CharField(max_length=20, blank=True)
 
 class Catagory(models.Model):
     id = models.AutoField(primary_key=True)
@@ -110,6 +112,7 @@ class CustomerCoupon(models.Model):
     id = models.AutoField(primary_key=True)
     coupon =  models.CharField(max_length=255)
     occasion = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='images/')
     start_date = models.DateField()
     expire_date = models.DateField()
     coupon_value = models.CharField(max_length=255)

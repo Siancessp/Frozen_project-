@@ -22,6 +22,7 @@ urlpatterns = [
     path('api/product-all/', AllProduct.as_view(), name=''),
     path('api/category/product-all/', CategoryAPIView.as_view(), name=''),
     path('api/categories/', CategoryFetch.as_view(), name=''),
+    path('api/categories/allpro/', CategoryProAPIView.as_view(), name=''),
 
     path('api/five/categories/', CategoryfiveFetch.as_view(), name=''),
     path('api/deal_of_the_day_five/', DealOfTheDayfiveAPIView.as_view(), name='deal_of_the_day_five'),

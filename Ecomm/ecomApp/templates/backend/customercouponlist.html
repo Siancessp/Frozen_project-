@@ -41,7 +41,8 @@
                       <th>Coupon Value(Percentage)</th>
                       <th>Coupon Type</th>
                       <th>Description</th>
-                      <th>Status</th>
+                      <th>Image</th>
+<!--                      <th>Status</th>-->
                       <th>Action</th>
 
                     </tr>
@@ -54,14 +55,19 @@
                         <td>{{ coupon.occasion}}</td>
                         <td>{{ coupon.start_date }}</td>
                         <td>{{ coupon.expire_date }}</td>
-                        <td>{{ coupon.coupon_value }}</td>
+                        <td>{{ coupon.coupon_value }} %</td>
                         <td>{{ coupon.coupon_type }}</td>
                         <td>{{ coupon.description }}</td>
-                         <td>{% if coupon.status %}
-               <a href="{% url 'customer_couponlist/deactivate_coupon' coupon.id %}" class="btn btn-danger text-white">Deactivate</a>
-            {% else %}
-               <a href="{% url 'customer_couponlist/activate_coupon' coupon.id %}" class="btn btn-success text-white">Activate</a>
-            {% endif %}</td>
+                        <td>{% if coupon.image %}
+                <img src="{{ coupon.image.url }}" alt="Item Image" width="100" height="70">
+                {% else %}
+                <p>No image found.</p>
+                {% endif %}</td>
+<!--                         <td>{% if coupon.status %}-->
+<!--               <a href="{% url 'customer_couponlist/deactivate_coupon' coupon.id %}" class="btn btn-danger text-white">Deactivate</a>-->
+<!--            {% else %}-->
+<!--               <a href="{% url 'customer_couponlist/activate_coupon' coupon.id %}" class="btn btn-success text-white">Activate</a>-->
+<!--            {% endif %}</td>-->
 
 
                         <td>

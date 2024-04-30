@@ -4,12 +4,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 # from django_otp import devices_for_user
 # from .serializers import RegistrationSerializer
-from ecomApp.models import CustomUser
+from ecomApp.models import CustomUser,Otp
 import random
+from django.utils import timezone
+import json
 # views.py
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
-from ecomApp.models import Otp
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.http import JsonResponse
@@ -62,49 +63,85 @@ AUTH_USER_MODEL = 'ecomApp.CustomUser'
 
 class RegistrationView(APIView):
     def post(self, request):
-        serializer = CustomUserSerializer(data=request.data)
-        print(request.data, "============")
+        request_data = json.loads(request.body.decode('utf-8'))
+
+        serializer = CustomUserSerializer(data=request_data)  # Use request_data instead of request.data
+        print(request_data, "============")
         if serializer.is_valid():
+
+            phone_number = request_data.get('phone_number')  # Assuming phone_number is in request data
+            otp_code = request_data.get('otp_value')  # Assuming OTP code is in request data
+            name = request_data.get('name')  # Assuming name is in request data
+
+            # Verify OTP for the given phone number
+            try:
+                otp_instance = Otp.objects.get(phone_number=phone_number, otp=otp_code)
+            except Otp.DoesNotExist:
+                return Response({'error': 'Invalid OTP'}, status=400)
+
+            # OTP verification successful, proceed with user registration
             user = serializer.save()
             refresh = RefreshToken.for_user(user)
 
+            # Delete the OTP record
+            otp_instance.delete()
+
             response_data = {
-                'status':'success',
-                'refresh': str(refresh)
-,
+                'status': 'success',
+                'refresh': str(refresh),
                 'access': str(refresh.access_token),
             }
             return Response(response_data, status=201)
         return Response(serializer.errors, status=400)
 
 
-
 from rest_framework.permissions import AllowAny
+
 
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow access to all users
 
     def post(self, request):
-        phone_number = request.data.get('phone_number')
-        password = request.data.get('password')
-        registration_id = request.data.get('registration_id','')
+        request_data = json.loads(request.body.decode('utf-8'))
+        phone_number = request_data.get('phone_number')
+        otp = request_data.get('otp_value')
+        registration_id = request_data.get('registration_id', '')
 
-        # Authenticate the user using the provided credentials
-        user = authenticate(request, phone_number=phone_number, password=password)
+        # Verify OTP for the given phone number
+        try:
+            otp_instance = Otp.objects.get(phone_number=phone_number, otp=otp)
+        except Otp.DoesNotExist:
+            return Response({'error': 'Invalid OTP'}, status=400)
+
+        # OTP verification successful, authenticate the user using phone number
+        try:
+            user = CustomUser.objects.get(phone_number=phone_number)
+        except CustomUser.DoesNotExist:
+            return Response({'error': 'Invalid credentials'}, status=401)
 
         if user is not None:
+            user.otp_value = otp
+
             # Authentication successful, generate tokens
             refresh = RefreshToken.for_user(user)
             if registration_id:
+                # Update registration_id in CustomUser model
                 user_profile = CustomUser.objects.get(id=user.id)
                 user_profile.registration_id = registration_id
                 user_profile.save()
-            response_data = {
-                'user_id':user.id,
-                'status': 'success',
 
-                'refresh': str(refresh)
-                ,
+            user.registration_id = registration_id
+            # Update otp_value in CustomUser model
+            user.otp_value = otp  # Assuming you have a field named 'otp_value' in your CustomUser model
+            user.save()
+
+            # Delete the OTP instance
+            otp_instance.delete()
+
+            response_data = {
+                'user_id': user.id,
+                'status': 'success',
+                'refresh': str(refresh),
                 'access': str(refresh.access_token),
             }
             return Response(response_data, status=200)
@@ -299,3 +336,92 @@ class DeleteAccountAPI(APIView):
 
         return Response({"message": "User account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
+
+import urllib.request
+import urllib.parse
+
+
+import urllib.request
+import urllib.parse
+
+import random
+import string
+import urllib.request
+import urllib.parse
+
+
+import random
+import string
+import urllib.request
+import urllib.parse
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+import urllib.request
+
+import urllib.request
+import urllib.parse
+import random
+import string
+
+
+import urllib.request
+import urllib.parse
+import random
+import string
+
+def generate_otp(length=6):
+    # Generate a random OTP of specified length
+    otp = ''.join(random.choices(string.digits, k=length))
+    return otp
+
+
+@csrf_exempt
+def sendSMS(apikey, numbers, sender, message):
+    data = urllib.parse.urlencode({'apikey': apikey, 'numbers': numbers,'message': message, 'sender': sender})
+    data = data.encode('utf-8')
+    request = urllib.request.Request("https://api.textlocal.in/send/?")
+    f = urllib.request.urlopen(request,data)
+    fr = f.read()
+    return (fr)
+
+# Example usage
+# Example usage
+# apikey = "NGI0ZjQzMzA2MTZjNjc1NDUzNTA3MDQ1NGI1ODczNWE="
+# sender_name = "FRZWLA"
+# recipient_number = '917980750314'  # Make sure to pass the phone number as a string
+# otp = generate_otp()
+# messsage = f'Your OTP is: {otp}'
+# resp = send_otp(apikey,918123456789,'Jims Autos','This is your message')
+# print(resp)
+@csrf_exempt
+def send_sms(request):
+    if request.method == 'POST':
+        # Extract the parameters from the request
+        apikey = "NGI0ZjQzMzA2MTZjNjc1NDUzNTA3MDQ1NGI1ODczNWE="
+        sender_name = "FRZWLA"
+        # recipient_number = request.POST.get('recipient_number')  # Extract from request
+        request_data = json.loads(request.body.decode('utf-8'))
+        recipient_number = request_data.get('phone_number')
+        otp = generate_otp()
+        message = f'{otp} is your signin OTP for Frozenwala account. Please apply this within 2min.'
+        otp_instance, created = Otp.objects.get_or_create(phone_number=recipient_number)
+
+        # If the record already exists, update the OTP value
+        if not created:
+            otp_instance.otp = otp
+            otp_instance.otp_created_at = timezone.now()
+            otp_instance.save()
+        # If the record doesn't exist, create a new OTP record
+        else:
+            otp_instance.otp = otp
+            otp_instance.otp_created_at = timezone.now()
+            otp_instance.save()        # Call the send_otp function
+        response = sendSMS(apikey, recipient_number, sender_name, message)
+
+        # Return a JSON response
+        return JsonResponse({ 'status': 'success'})
+    else:
+        # Return an error response if the request method is not POST
+        return JsonResponse({'error': 'Invalid request method'}, status=400)

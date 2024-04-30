@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Otp,CustomUser
+from .models import CustomUser,Otp
 from django.db.models import Sum
 from django.db.models import Count
 from django.utils.timezone import datetime, timedelta
@@ -127,6 +127,7 @@ def send_otp(request):
             # Store OTP and its creation time in database
             otp_obj, created = Otp.objects.get_or_create(user=user)
             otp_obj.otp = otp
+
             otp_obj.otp_created_at = timezone.now()
             otp_obj.save()
 
@@ -426,6 +427,8 @@ def add_customer_coupon(request):
         customer_name = request.POST.get('customerName')
         occasion_name = request.POST.get('occasionName')
         start_date = request.POST.get('startDate')
+        image = request.FILES.get('image')
+
         expire_date = request.POST.get('expireDate')
         coupon_value = request.POST.get('couponValue')
         coupon_type = request.POST.get('couponType')
@@ -439,7 +442,8 @@ def add_customer_coupon(request):
             start_date=start_date,
             coupon_value=coupon_value,
             coupon_type=coupon_type,
-            description=description
+            description=description,
+            image=image
         )
         customer_coupon.save()
 
@@ -454,7 +458,7 @@ from django.shortcuts import get_object_or_404
 @login_required(login_url='backend/login')
 def delete_coupon(request, coupon_id):
     coupon = get_object_or_404(CustomerCoupon, pk=coupon_id)
-    coupon.delete_coupon()
+    coupon.delete()
     # Optionally, add a success message or redirect to a different page
     return redirect('customer_couponlist')
 @login_required(login_url='backend/login')
@@ -647,7 +651,19 @@ def render_order_dropdown(request):
     # Return JSON response
     return JsonResponse(data)
 
+from rest_framework import generics
+from .models import CustomerCoupon
+from .serializers import CustomerCouponSerializer
+from datetime import date
 
+class CouponList(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+
+    serializer_class = CustomerCouponSerializer
+
+    def get_queryset(self):
+        today = date.today()
+        return CustomerCoupon.objects.filter(start_date__lte=today, expire_date__gte=today)
 
 
 

@@ -86,6 +86,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'Ecomm.urls'
@@ -160,6 +162,7 @@ import djongo
 # }
 
 
+
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -218,20 +221,20 @@ USE_TZ = True
 #
 # RAZORPAY_API_KEY="rzp_test_enEwAJBwuY35MP"
 # RAZORPAY_SECRET_KEY="GDMhskdQyL9mC1OohkGJAoKC"
-STATIC_URL = 'static/'
+# STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ALLOWED_HOSTS = ['*']
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR,'static'),
-    # Add other directories if needed
-]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR,'static'),
+#     # Add other directories if needed
+# ]
 
 # Define the directory where Django will collect static files for deployment
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')
 #216 219 212 database 221
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -242,3 +245,18 @@ EMAIL_HOST_PASSWORD = 'ubpz dnre zoen rkuq'
 
 RAZORPAY_API_KEY="rzp_test_enEwAJBwuY35MP"
 RAZORPAY_SECRET_KEY="GDMhskdQyL9mC1OohkGJAoKC"
+
+
+import os
+import firebase_admin
+from firebase_admin import credentials
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#
+
+
+
+
+STATIC_URL = 'staticfiles/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')

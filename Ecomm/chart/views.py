@@ -105,9 +105,9 @@ def itemwise_chart(request):
 
         products = Item.objects.all()
 
-        return render(request, 'backend/itemwisereport.html', {'itemwise_report': itemwise_report, 'products': products})
+        return render(request, 'backend/itemwisechart.html', {'itemwise_report': itemwise_report, 'products': products})
 
-    return render(request, 'backend/itemwisereport.html', {})
+    return render(request, 'backend/itemwisechart.html', {})
 from datetime import date
 
 @login_required(login_url='backend/login')
@@ -167,7 +167,7 @@ def category_wise_sales_chart(request):
     context = {
         'category_sales': category_sales.items()
     }
-    return render(request, 'backend/category_wise_sales_report.html', context)
+    return render(request, 'backend/category_wise_sales_chart.html', context)
 @login_required(login_url='backend/login')
 def profit_chart(request):
     if request.method == 'GET':
@@ -235,7 +235,7 @@ def profit_chart(request):
         # Convert unique_orders dictionary to a list of dictionaries for rendering
         day_wise_report = [{'order_id': key, **value} for key, value in unique_orders.items()]
 
-        return render(request, 'backend/profitforpickup.html',
+        return render(request, 'backend/profitforpickupchart.html',
                       {'day_wise_report': day_wise_report, 'total_all_orders': total_all_orders,'total_profit_amount':total_profit_amount})
 
-    return render(request, 'backend/profitforpickup.html', {})
+    return render(request, 'backend/profitforpickupchart.html', {})

@@ -55,8 +55,6 @@ urlpatterns = [
     path('backend/stock/all_edit_item/', allstock, name="allstock"),
     path('pending-orders/count/', pending_orders_count, name='pending_orders_count'),
     path('orders/dropdown/', render_order_dropdown, name='order_dropdown'),
-
-
-
+    path('api/couponlist/', CouponList.as_view(), name='coupon-list'),
 
 ]

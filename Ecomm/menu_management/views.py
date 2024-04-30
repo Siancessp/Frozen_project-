@@ -290,3 +290,31 @@ class AllfiveProduct(APIView):
         items = [item for item in items if item.status][:4]
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
+
+class CategoryProAPIView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Fetch all categories
+            categories = Catagory.objects.all()
+
+            # Serialize the categories
+            category_serializer = CategorySerializer(categories, many=True)
+
+            # Fetch all products
+            products = Item.objects.all()
+
+            # Serialize the products
+            product_serializer = ItemSerializer(products, many=True)
+
+            # Combine categories and products in the response
+            response_data = category_serializer.data
+
+            # Add each product directly under "all"
+            for product_data in product_serializer.data:
+                response_data.append({"all": product_data})
+
+            return Response(response_data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
