@@ -81,6 +81,30 @@
                                     <input type="number"  value="{{ item.discount }}" id="discount" name="discount" required class="form-control" readonly>
                                 </div>
                             </div>
+                            <br>
+                            <br>
+                                          <div class="row">
+    <div class="col-lg-4">
+        <label for="deal_of_the_day">
+            <input type="checkbox" id="deal_of_the_day" name="deal_of_the_day" class="toggle-checkbox" {% if item.deal_of_the_day %}checked{% endif %}>
+            <span class="toggle-label">Deal Of The Day</span>
+        </label>
+    </div>
+    <div class="col-lg-4">
+        <label for="most_popular">
+            <input type="checkbox" id="most_popular" name="most_popular" class="toggle-checkbox" {% if item.most_popular %}checked{% endif %}>
+            <span class="toggle-label">Most Popular</span>
+        </label>
+    </div>
+    <div class="col-lg-4">
+        <label for="recommended">
+            <input type="checkbox" id="recommended" name="recommended" class="toggle-checkbox" {% if item.recommended %}checked{% endif %}>
+            <span class="toggle-label">Recommended</span>
+        </label>
+    </div>
+</div>
+
+                            <br><br>
                             <div class="row">
 <!--                                <div class="col-lg-6">-->
 <!--                                    <label for="item_quantity">Item Quantity:</label>-->

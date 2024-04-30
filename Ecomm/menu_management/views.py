@@ -137,6 +137,11 @@ def update_item(request, item_id):
         edit_item.item_old_price = request.POST.get('item_old_price')
         edit_item.discount = request.POST.get('discount')
         edit_item.item_new_price = request.POST.get('item_new_price')
+        edit_item.deal_of_the_day = request.POST.get('deal_of_the_day') == 'on'
+        edit_item.recommended = request.POST.get('recommended') == 'on'
+        edit_item.most_popular = request.POST.get('most_popular') == 'on'
+
+
         edit_item.category_id = request.POST.get('category')  # Assuming you're passing category id from the form
         edit_item.save()
         return redirect('item_list')  # Redirect to item list page after successful update

@@ -59,7 +59,7 @@
         <img src="{{ i.image.url }}" alt="Image" width="100"
      height="70">
     {% else %}
-        <p>No image found.</p>
+        <img src=" {%  static 'assets/images/Frozenwala logo.png' %} " alt="Image" width="100"
     {% endif %}</td>
                         <td>{% if i.status %}
                <a href="{% url 'catgoryapp/deactivate_catagory' i.id %}" class="btn btn-danger text-white">Deactivate</a>
@@ -68,9 +68,9 @@
             {% endif %}</td>
 
                         <td>
-                            <a href="{% url 'catagory/view_item' i.id %}" class="view" title="View" data-toggle="tooltip"><i class="fa fa-eye"></i></a>
-                            <a href="{% url 'catagory/edit_item' i.id %}" class="edit" title="Edit" data-toggle="tooltip"><i class="fa fa-edit"></i></a>
-                            <a href="{% url 'catagory/delete_item' i.id %}" ><i class="fa fa-trash"></i></a>
+                            <a href="{% url 'catagory/view_item' i.id %}" class="view" title="View" data-toggle="tooltip"><i style="color: #ff9900;" class="fa fa-eye"></i></a>
+                            <a href="{% url 'catagory/edit_item' i.id %}" class="edit" title="Edit" data-toggle="tooltip"><i style="color: #ff9900;" class="fa fa-edit"></i></a>
+                            <a href="{% url 'catagory/delete_item' i.id %}" ><i style="color: #ff9900;" class="fa fa-trash"></i></a>
                         </td>
                     </tr>
                 {% endfor %}

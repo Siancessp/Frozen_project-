@@ -29,7 +29,12 @@ def daywise_report(request):
             from_date = datetime.strptime(from_date, '%Y-%m-%d')
         if to_date:
             to_date = datetime.strptime(to_date, '%Y-%m-%d')
+        if not to_date:  # If to_date is not provided, set it to today
+            to_date = datetime.now()
 
+            # If from_date is not provided, set it to 30 days before to_date
+        if not from_date:
+            from_date = to_date - timedelta(days=30)
         # Filter orders based on the provided parameters
         queryset = Order.objects.all()
         queryset = queryset.exclude(payment_id="")
@@ -84,7 +89,12 @@ def itemwise_report(request):
             from_date = datetime.strptime(from_date, '%Y-%m-%d')
         if to_date:
             to_date = datetime.strptime(to_date, '%Y-%m-%d')
+        if not to_date:  # If to_date is not provided, set it to today
+            to_date = datetime.now()
 
+            # If from_date is not provided, set it to 30 days before to_date
+        if not from_date:
+            from_date = to_date - timedelta(days=30)
         # Filter orders based on the provided parameters
         queryset = Order.objects.exclude(payment_id="")
 
@@ -177,7 +187,12 @@ def profit_report(request):
             from_date = datetime.strptime(from_date, '%Y-%m-%d')
         if to_date:
             to_date = datetime.strptime(to_date, '%Y-%m-%d')
+        if not to_date:  # If to_date is not provided, set it to today
+            to_date = datetime.now()
 
+            # If from_date is not provided, set it to 30 days before to_date
+        if not from_date:
+            from_date = to_date - timedelta(days=30)
         # Filter orders based on the provided parameters
         queryset = Order.objects.exclude(payment_id="")
 

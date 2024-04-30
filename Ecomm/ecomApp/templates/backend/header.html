@@ -154,34 +154,34 @@
 <!--    document.addEventListener('DOMContentLoaded', fetchOrderDetailsAndCount);-->
 <!--    setInterval(fetchOrderDetailsAndCount, 1000); // Update every second-->
 <!--</script>-->
-<script>
-    // Function to fetch pending orders count and check for new orders
-    function fetchPendingOrdersData() {
-        // Fetch pending orders count
-        fetch('/pending-orders/count/')
-            .then(response => response.json())
-            .then(data => {
-                const previousCount = parseInt(localStorage.getItem('previousOrderCount')) || 0;
-                const currentCount = data.pending_orders_count;
+<!--<script>-->
+<!--    // Function to fetch pending orders count and check for new orders-->
+<!--    function fetchPendingOrdersData() {-->
+<!--        // Fetch pending orders count-->
+<!--        fetch('/pending-orders/count/')-->
+<!--            .then(response => response.json())-->
+<!--            .then(data => {-->
+<!--                const previousCount = parseInt(localStorage.getItem('previousOrderCount')) || 0;-->
+<!--                const currentCount = data.pending_orders_count;-->
 
-                // Check if there are new orders
-                if (currentCount > previousCount) {
-                    // Play the notification sound
-                    const notificationSound = document.getElementById('notificationSound');
-                    notificationSound.play();
-                }
+<!--                // Check if there are new orders-->
+<!--                if (currentCount > previousCount) {-->
+<!--                    // Play the notification sound-->
+<!--                    const notificationSound = document.getElementById('notificationSound');-->
+<!--                    notificationSound.play();-->
+<!--                }-->
 
-                // Update the content of the badge with the count
-                document.getElementById('pending-orders-badge').textContent = currentCount;
-                // Update local storage with the current count
-                localStorage.setItem('previousOrderCount', currentCount);
-            })
-            .catch(error => {
-                console.error('Error fetching pending orders count:', error);
-            });
-    }
+<!--                // Update the content of the badge with the count-->
+<!--                document.getElementById('pending-orders-badge').textContent = currentCount;-->
+<!--                // Update local storage with the current count-->
+<!--                localStorage.setItem('previousOrderCount', currentCount);-->
+<!--            })-->
+<!--            .catch(error => {-->
+<!--                console.error('Error fetching pending orders count:', error);-->
+<!--            });-->
+<!--    }-->
 
-    // Call the function initially and then every second
-    document.addEventListener('DOMContentLoaded', fetchPendingOrdersData);
-    setInterval(fetchPendingOrdersData, 1000); // Update every second
-</script>
+<!--    // Call the function initially and then every second-->
+<!--    document.addEventListener('DOMContentLoaded', fetchPendingOrdersData);-->
+<!--    setInterval(fetchPendingOrdersData, 1000); // Update every second-->
+<!--</script>-->

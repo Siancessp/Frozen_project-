@@ -7,6 +7,7 @@ from django.db.models import Sum
 from django.db.models import Count
 from django.utils.timezone import datetime, timedelta
 from django.db.models.functions import TruncDate
+from collections import defaultdict
 
 
 from django.db.models import Count, Avg
@@ -15,11 +16,15 @@ from django.shortcuts import render
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import F
+from django.db.models import Max, Subquery, OuterRef
+
 
 @login_required(login_url='backend/login')
 def render_product_dropdown(request):
     products = Item.objects.all()
     return render(request, 'backend/itemwisechart.html', {'products': products})
+
+
 @login_required(login_url='backend/login')
 def daywise_chart(request):
     if request.method == 'GET':
@@ -34,8 +39,14 @@ def daywise_chart(request):
             to_date = datetime.strptime(to_date, '%Y-%m-%d')
 
         # Filter orders based on the provided parameters
-        queryset = Order.objects.all()
-        queryset = queryset.exclude(payment_id="")
+        queryset = Order.objects.exclude(payment_id="")
+
+        # Subquery to get the latest order for each payment_id
+        latest_order_subquery = Order.objects.filter(payment_id=OuterRef('payment_id')) \
+                                              .order_by('-created_at') \
+                                              .values('id')[:1]
+
+        queryset = queryset.filter(id__in=Subquery(latest_order_subquery))
 
         if order_type:
             queryset = queryset.filter(pick_up=order_type)
@@ -46,33 +57,27 @@ def daywise_chart(request):
             queryset = queryset.filter(created_at__range=(from_date, to_date))
 
         # Perform aggregation and ordering
-        day_wise_report = queryset.values('order_id', 'created_at', 'total_price') \
-            .annotate(total_amount=Sum('total_price'),
-                      total_items=Count('id'),  # Counting unique items, not order_id occurrences
-                      average_price=Avg('price')) \
-            .order_by('order_id')
+        day_wise_report = queryset.values('created_at') \
+            .annotate(total_amount=Sum('total_price')) \
+            .order_by('created_at')
 
         # Convert the queryset to a dictionary for rendering
-        unique_orders = {}
-        total_amounts = {}
+        unique_dates = defaultdict(lambda: {'total': 0})  # Using defaultdict to store totals for each unique created date
+        total_all_orders = 0
 
         for entry in day_wise_report:
-            order_id = entry['order_id']
             created_at = entry['created_at'].strftime('%Y-%m-%d')  # Format the datetime
-            total_price = entry['total_price']
-            if order_id not in unique_orders:
-                unique_orders[order_id] = {
-                    'created_at': created_at,
-                    'total_amount': total_price,
-                    'total': total_price,
-                }
-                total_amounts[order_id] = total_price
-            else:
-                unique_orders[order_id]['total_amount'] += total_price
-        total_all_orders = sum(total_amounts.values())        # Convert unique_orders dictionary to a list of dictionaries for rendering
-        day_wise_report = [{'order_id': key, **value} for key, value in unique_orders.items()]
+            total_price = entry['total_amount']
 
-        return render(request, 'backend/daywise_chart.html', {'day_wise_report': day_wise_report,'total_all_orders': total_all_orders})
+            # Aggregate totals for each unique created date
+            unique_dates[created_at]['total'] += total_price
+            total_all_orders += total_price
+
+        # Convert unique_dates dictionary to a list of dictionaries for rendering
+        day_wise_report = [{'created_at': key, **value} for key, value in unique_dates.items()]
+
+        return render(request, 'backend/daywise_chart.html',
+                      {'day_wise_report': day_wise_report, 'total_all_orders': total_all_orders})
 
     return render(request, 'backend/daywise_chart.html', {})
 @login_required(login_url='backend/login')
@@ -87,7 +92,12 @@ def itemwise_chart(request):
             from_date = datetime.strptime(from_date, '%Y-%m-%d')
         if to_date:
             to_date = datetime.strptime(to_date, '%Y-%m-%d')
+        if not to_date:  # If to_date is not provided, set it to today
+            to_date = datetime.now()
 
+            # If from_date is not provided, set it to 30 days before to_date
+        if not from_date:
+            from_date = to_date - timedelta(days=30)
         # Filter orders based on the provided parameters
         queryset = Order.objects.exclude(payment_id="")
 

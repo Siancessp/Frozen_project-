@@ -45,7 +45,7 @@ def orderlist(request):
             if order.order_id not in orders_dict:
                 orders_dict[order.order_id] = order
     # Extract the first element of each group
-    first_elements = [order for order in orders_dict.values()]
+    first_elements = [order for order in orders_dict.values()][:10]
 
     # Pass the first elements to the template context
     context = {

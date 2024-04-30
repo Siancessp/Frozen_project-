@@ -248,8 +248,6 @@ RAZORPAY_SECRET_KEY="GDMhskdQyL9mC1OohkGJAoKC"
 
 
 import os
-import firebase_admin
-from firebase_admin import credentials
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #

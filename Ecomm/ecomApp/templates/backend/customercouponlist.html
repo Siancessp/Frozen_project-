@@ -61,7 +61,7 @@
                         <td>{% if coupon.image %}
                 <img src="{{ coupon.image.url }}" alt="Item Image" width="100" height="70">
                 {% else %}
-                <p>No image found.</p>
+        <img src=" {%  static 'assets/images/Frozenwala logo.png' %} " alt="Image" width="100"
                 {% endif %}</td>
 <!--                         <td>{% if coupon.status %}-->
 <!--               <a href="{% url 'customer_couponlist/deactivate_coupon' coupon.id %}" class="btn btn-danger text-white">Deactivate</a>-->
@@ -71,7 +71,7 @@
 
 
                         <td>
-      <a href="{% url 'customer_couponlist/delete_item' coupon.id %}" ><i class="fa fa-trash"></i></a>
+      <a href="{% url 'customer_couponlist/delete_item' coupon.id %}" ><i style="color: #ff9900;" class="fa fa-trash"></i></a>
                         </td>
                       </tr>
                     {% endfor %}
