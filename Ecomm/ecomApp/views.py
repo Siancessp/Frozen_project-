@@ -8,6 +8,7 @@ from django.utils.timezone import datetime, timedelta
 from django.db.models.functions import TruncDate
 from django.db.models import Max, Subquery, OuterRef
 from collections import defaultdict
+from django.db.models import F
 
 from menu_management.models import Item
 from django.db.models import Count, Avg
@@ -212,6 +213,79 @@ def dashboard(request):
 
         day_wise_report = [{'order_id': key, **value} for key, value in unique_orders.items()]
 
+        order_type = request.GET.get('order_type', None)
+        from_date = request.GET.get('from_date', None)
+        to_date = request.GET.get('to_date', None)
+
+        # Convert date strings to datetime objects if provided
+        if from_date:
+            from_date = datetime.strptime(from_date, '%Y-%m-%d')
+        if to_date:
+            to_date = datetime.strptime(to_date, '%Y-%m-%d')
+        if not to_date:  # If to_date is not provided, set it to today
+            to_date = datetime.now()
+
+        # If from_date is not provided, set it to 30 days before to_date
+        if not from_date:
+            from_date = to_date - timedelta(days=30)
+
+        # Filter orders based on the provided parameters
+        queryset = Order.objects.exclude(payment_id="")
+
+        if order_type:
+            queryset = queryset.filter(pick_up=order_type)
+
+        if from_date and to_date:
+            # Add one day to include the end date
+            to_date = to_date + timedelta(days=1)
+            queryset = queryset.filter(created_at__range=(from_date, to_date))
+
+        # Perform aggregation and ordering
+        day_wise_report = queryset.values('order_id', 'created_at', 'delivery_price') \
+            .annotate(
+            total_items=Count('id'),
+            total_price=Sum('total_price'),
+            total_making_price=Sum(F('product_id__makingprice') * F('quantity'))
+        ) \
+            .order_by('order_id')
+
+        # Convert the queryset to a dictionary for rendering
+        unique_orders = {}
+        total_all_orders = 0
+        total_profit_amount = 0
+
+        for entry in day_wise_report:
+            order_id = entry['order_id']
+            created_at = entry['created_at'].strftime('%Y-%m-%d')  # Format the datetime
+            total_making_price = entry['total_making_price']
+            total_price = entry['total_price']
+            delivery_price = float(entry['delivery_price'])  # Convert delivery_price to float
+
+            if order_id not in unique_orders:
+                unique_orders[order_id] = {
+                    'created_at': created_at,
+                    'total_amount': total_price,
+                    'total': total_price,
+                    'total_making_price': total_making_price,
+                    'delivery_price': delivery_price
+                }
+            else:
+                unique_orders[order_id]['total_amount'] += total_price
+                unique_orders[order_id]['total_making_price'] += total_making_price
+
+        # Calculate profit amount for each entry
+        for entry in day_wise_report:
+            order_id = entry['order_id']
+            profit_amount = entry['total_price'] - unique_orders[order_id]['total_making_price'] - \
+                            unique_orders[order_id]['delivery_price']
+            unique_orders[order_id]['profit_amount'] = profit_amount
+            unique_orders[order_id]['total_pr'] = entry['total_price']
+
+        total_all_orders = sum(entry['total_amount'] for entry in unique_orders.values())
+        total_profit_amount += sum(entry['profit_amount'] for entry in unique_orders.values())
+
+        # Convert unique_orders dictionary to a list of dictionaries for rendering
+        day_wise_report = [{'order_id': key, **value} for key, value in unique_orders.items()]
 
         # Filter orders based on the provided parameters
         queryset = Order.objects.exclude(payment_id="")

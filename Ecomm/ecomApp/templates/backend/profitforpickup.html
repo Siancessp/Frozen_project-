@@ -63,22 +63,27 @@
                     <th>Date</th>
                     <th>Order Amount</th>
                     <th>Making Cost</th>
+                    <th>Delivery Amount</th>
                     <th>Profit Amount</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    {% for entry in day_wise_report %}
-    <td>{{ forloop.counter }}</td>
-    <td>{{ entry.created_at }}</td>
-    <td>{{ entry.total_pr }}</td>
-    <td>{{ entry.total_making_price }}</td>
-                    <td>{{ entry.profit_amount }}</td>
+                {% for entry in day_wise_report %}
 
-    </tr>
+        <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ entry.created_at }}</td>
+        <td>{{ entry.total_pr }}</td>
+        <td>{{ entry.total_making_price }}</td>
+        <td>{{ entry.delivery_price }}</td>
+        <td>{{ entry.profit_amount }}</td>
+</tr>
     {% endfor %}
+
+
+
                     <tr>
-                        <td colspan="4">Total Amount:</td>
+                        <td colspan="5">Total Amount:</td>
                         <td>{{ total_profit_amount }}</td>
                     </tr>
                 </tr>

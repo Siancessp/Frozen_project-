@@ -190,6 +190,12 @@ def profit_chart(request):
             from_date = datetime.strptime(from_date, '%Y-%m-%d')
         if to_date:
             to_date = datetime.strptime(to_date, '%Y-%m-%d')
+        if not to_date:  # If to_date is not provided, set it to today
+            to_date = datetime.now()
+
+        # If from_date is not provided, set it to 30 days before to_date
+        if not from_date:
+            from_date = to_date - timedelta(days=30)
 
         # Filter orders based on the provided parameters
         queryset = Order.objects.exclude(payment_id="")
@@ -203,22 +209,25 @@ def profit_chart(request):
             queryset = queryset.filter(created_at__range=(from_date, to_date))
 
         # Perform aggregation and ordering
-        day_wise_report = queryset.values('order_id', 'created_at','total_price') \
+        day_wise_report = queryset.values('order_id', 'created_at', 'delivery_price') \
             .annotate(
-                      total_items=Count('id'),
-                      average_price=Avg('price'),
-                      total_making_price=Sum('product_id__makingprice')) \
+            total_items=Count('id'),
+            total_price=Sum('total_price'),
+            total_making_price=Sum(F('product_id__makingprice') * F('quantity'))
+        ) \
             .order_by('order_id')
 
         # Convert the queryset to a dictionary for rendering
         unique_orders = {}
         total_all_orders = 0
-        total_profit_amount=0
+        total_profit_amount = 0
+
         for entry in day_wise_report:
             order_id = entry['order_id']
             created_at = entry['created_at'].strftime('%Y-%m-%d')  # Format the datetime
             total_making_price = entry['total_making_price']
             total_price = entry['total_price']
+            delivery_price = float(entry['delivery_price'])  # Convert delivery_price to float
 
             if order_id not in unique_orders:
                 unique_orders[order_id] = {
@@ -226,26 +235,45 @@ def profit_chart(request):
                     'total_amount': total_price,
                     'total': total_price,
                     'total_making_price': total_making_price,
+                    'delivery_price': delivery_price
                 }
             else:
                 unique_orders[order_id]['total_amount'] += total_price
                 unique_orders[order_id]['total_making_price'] += total_making_price
-        # Calculate profit amount for each entry
+
         # Calculate profit amount for each entry
         for entry in day_wise_report:
             order_id = entry['order_id']
-            profit_amount = entry['total_price'] - unique_orders[order_id]['total_making_price']
+            profit_amount = entry['total_price'] - unique_orders[order_id]['total_making_price'] - \
+                            unique_orders[order_id]['delivery_price']
             unique_orders[order_id]['profit_amount'] = profit_amount
             unique_orders[order_id]['total_pr'] = entry['total_price']
-
 
         total_all_orders = sum(entry['total_amount'] for entry in unique_orders.values())
         total_profit_amount += sum(entry['profit_amount'] for entry in unique_orders.values())
 
         # Convert unique_orders dictionary to a list of dictionaries for rendering
         day_wise_report = [{'order_id': key, **value} for key, value in unique_orders.items()]
+        # Initialize a dictionary to store total profit for each date
+        total_profit_by_date = {}
 
-        return render(request, 'backend/profitforpickupchart.html',
-                      {'day_wise_report': day_wise_report, 'total_all_orders': total_all_orders,'total_profit_amount':total_profit_amount})
+        # Calculate profit amount for each entry and aggregate by date
+        for entry in day_wise_report:
+            created_at = entry['created_at']
+            profit_amount = entry['total_pr'] - entry['total_making_price'] - entry['delivery_price']
+
+            if created_at not in total_profit_by_date:
+                total_profit_by_date[created_at] = profit_amount
+            else:
+                total_profit_by_date[created_at] += profit_amount
+
+        # Convert the total profit by date dictionary to a list of dictionaries for rendering
+        total_profit_report = [{'created_at': key, 'total_profit': value} for key, value in
+                               total_profit_by_date.items()]
+
+        # Now you have a list of dictionaries with 'created_at' and 'total_profit' for each date
+
+    return render(request, 'backend/profitforpickupchart.html',
+                      {'day_wise_report': total_profit_report, 'total_all_orders': total_all_orders,'total_profit_amount':total_profit_amount})
 
     return render(request, 'backend/profitforpickupchart.html', {})

@@ -124,7 +124,7 @@ var dates = [];
 var orders = [];
 {% for entry in day_wise_report %}
     dates.push("{{ entry.created_at }}");
-    orders.push({{ entry.profit_amount }});
+    orders.push({{ entry.total_profit }});
 {% endfor %}
 
 // Create the chart with the extracted data

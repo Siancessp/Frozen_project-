@@ -73,9 +73,9 @@
     // Extracting dates and orders from Django template variable
     var dates = [];
     var orders = [];
-        {% for item in ordform %}
+        {% for entry in ordform %}
         dates.push("{{ entry.created_at }}");
-        orders.push({{ entry.item.total_price }});
+        orders.push({{ entry.total_price }});
     {% endfor %}
 
     // Create the chart with the extracted data

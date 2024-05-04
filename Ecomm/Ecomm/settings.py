@@ -110,16 +110,46 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Ecomm.wsgi.application'
-
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'myproject',
+        'USER': 'myprojectuser',
+        'PASSWORD': 'Siance@123',
+        'HOST': 'localhost',
+        'PORT': '',
     }
 }
+# Database
+# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'u282720346_frozenwala',
+#         'USER': 'u282720346_frozenwala',
+#         'PASSWORD': 'Der543#$@fhi876^2sD$',
+#         'HOST': 'localhost',   # Or the hostname of your MySQL server
+#         'PORT': '3306',        # Or the port of your MySQL server
+#     }
+# }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'your_database_name',
+#         'USER': 'your_postgres_username',
+#         'PASSWORD': 'your_postgres_password',
+#         'HOST': 'localhost',
+#         'PORT': '5432',  # Default PostgreSQL port
+#     }
+# }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 import djongo
 
 # DATABASES = {

@@ -53,12 +53,15 @@
 
                                  <div class="col-lg-6">
     <label for="category">Category:</label>
-    <select id="category" name="category" class="form-control">
-        <option value="" {% if not selected_category %}selected{% endif %}>None</option>
-        {% for category in categories %}
-            <option value="{{ category.id }}" {% if selected_category == category.id %}selected{% endif %}>{{ category.name }}</option>
-        {% endfor %}
+                                     <select id="category" name="category" class="form-control">
+            <option value="" >Home</option>
     </select>
+<!--    <select id="category" name="category" class="form-control">-->
+<!--        <option value="" {% if not selected_category %}selected{% endif %}>None</option>-->
+<!--        {% for category in categories %}-->
+<!--            <option value="{{ category.id }}" {% if selected_category == category.id %}selected{% endif %}>{{ category.name }}</option>-->
+<!--        {% endfor %}-->
+<!--    </select>-->
 </div>
                             </div>
 
