@@ -188,7 +188,7 @@ from walet.models import Walet
 import math
 
 class CartTotalPrice(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
@@ -373,18 +373,3 @@ class CartDetailsMainAPIView(APIView):
             return Response(serializer.data[0], status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class UniqueProductCount(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        try:
-            user_id = request.query_params.get('user_id')
-
-            # Query the Cart table to get the count of unique products for the given user_id
-            unique_product_count = Cart.objects.filter(u_id=user_id).values('product_id').distinct().count()
-            return Response({'unique_product_count': unique_product_count}, status=status.HTTP_200_OK)
-        except Cart.DoesNotExist:
-            return Response({'error': 'User does not have any products in the cart.'}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

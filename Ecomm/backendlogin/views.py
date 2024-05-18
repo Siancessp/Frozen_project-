@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from django.views.decorators.cache import never_cache
 from .forms import CustomAuthenticationForm  # Assuming you have a custom authentication form
 AUTH_USER_MODEL = 'backendlogin.BackendCustomUser'
 
@@ -21,13 +22,17 @@ def login_view(request):
                 return render(request, 'backend/login.html', {'form': form, 'error': 'Invalid login credentials'})
     else:
         form = CustomAuthenticationForm()
+    if request.session.get('logged_out'):
+        del request.session['logged_out']
 
     return render(request, 'backend/login.html', {'form': form, 'error': 'Invalid login credentials'})
 
 
 
 def logout_view(request):
-    logout(request)
+    if request.user.is_authenticated:
+        request.session['logged_out'] = True  # Set session variable to indicate logout
+        logout(request)
     return redirect('backend/login')
 @login_required(login_url='backend/login')
 def dashboard(request):

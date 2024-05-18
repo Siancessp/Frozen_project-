@@ -30,7 +30,7 @@
         <div class="row">
           <div class="col-12 col-sm-6 col-md-3">
             <div class="info-box">
-              <span class="info-box-icon bg-info elevation-1"><i class="fas fa-dollar-sign"></i></span>
+              <span class="info-box-icon bg-info elevation-1"><i class="fas fa-rupee-sign"></i></span>
 
               <div class="info-box-content">
                 <span class="info-box-text">Total Sales Amount</span>
@@ -138,19 +138,19 @@
 
                       <td>
     {% if i.status == "1" %}
-        <a href="" id="activeLink"  class="btn btn-primary text-white">Pending</a>
+        <a href="" id="activeLink" class="btn btn-primary text-white">Pending</a>
     {% elif i.status == "2" %}
-        <a href="" id="activeLink"  class="btn btn-info text-white">Confirm</a>
+        <a href="" id="activeLink" class="btn btn-info text-white">Confirm</a>
     {% elif i.status == "3" %}
-        <a href="" id="activeLink"  class="btn btn-secondary text-white">Picked Up</a>
+        <a href="" id="activeLink" class="btn btn-secondary text-white">Picked Up</a>
     {% elif i.status == "4" %}
-        <a href="" id="activeLink"  class="btn btn-success text-white">Delivered</a>
+        <a href="" id="activeLink" class="btn btn-success text-white">Delivered</a>
     {% elif i.status == "5" %}
-        <a href="" id="activeLink"  class="btn btn-danger text-white">Cancel</a>
+        <a href="" id="activeLink" class="btn btn-danger text-white">Cancel</a>
     {% elif i.status == "6" %}
-        <a href="" id="activeLink"  class="btn btn-success text-white">Return Request</a>
+        <a href="" id="activeLink" class="btn btn-success text-white">Return Request</a>
     {% else %}
-        <a href="" id="blockLink"  class="btn btn-warning text-white">Return Accepted</a>
+        <a href="" id="blockLink" class="btn btn-warning text-white">Return Accepted</a>
     {% endif %}
 </td>
 

@@ -79,6 +79,7 @@ SIMPLE_JWT = {
 
 
 MIDDLEWARE = [
+    'backendlogin.middleware.RevalidateBackHistoryMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -88,6 +89,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+
 ]
 
 ROOT_URLCONF = 'Ecomm.urls'
@@ -110,46 +112,25 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Ecomm.wsgi.application'
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'myproject',
-        'USER': 'myprojectuser',
-        'PASSWORD': 'Siance@123',
-        'HOST': 'localhost',
-        'PORT': '',
-    }
-}
+
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'u282720346_frozenwala',
-#         'USER': 'u282720346_frozenwala',
-#         'PASSWORD': 'Der543#$@fhi876^2sD$',
-#         'HOST': 'localhost',   # Or the hostname of your MySQL server
-#         'PORT': '3306',        # Or the port of your MySQL server
-#     }
-# }
-# DATABASES = {
-#     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'your_database_name',
-#         'USER': 'your_postgres_username',
-#         'PASSWORD': 'your_postgres_password',
-#         'HOST': 'localhost',
-#         'PORT': '5432',  # Default PostgreSQL port
+#         'NAME': 'frozenwaladb',
+#         'USER': 'Frozenwala',
+#         'PASSWORD': 'Frozenwala_007',
+#         'HOST': 'frozenwaladb.cpowoy2cei6a.ap-south-1.rds.amazonaws.com',
+#         'PORT': '5432',
 #     }
 # }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 import djongo
 
 # DATABASES = {

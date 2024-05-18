@@ -46,10 +46,12 @@ def orderlist(request):
                 orders_dict[order.order_id] = order
     # Extract the first element of each group
     first_elements = [order for order in orders_dict.values()][:10]
+    sec_elements = [order for order in orders_dict.values()]
 
     # Pass the first elements to the template context
     context = {
-        'ordform': first_elements
+        'ordform': first_elements,
+        'new': sec_elements
     }
 
     return render(request, 'backend/orderlist.html', context)
@@ -326,10 +328,15 @@ def verify_payment(request):
                 # stock.save()
                 product_id = order.product_id
                 quantity = order.quantity
-                stock = Stock.objects.select_for_update().get(item_id=product_id)
+                # stock = Stock.objects.select_for_update().get(item_id=product_id)
+                stock = Stock.objects.get(item_id=product_id)
+
                 stock.openingstock -= quantity
                 stock.save()
-            user_id = orders.first().user_id.id
+            first_order = orders.first()
+
+            # Get the user_id from the first order
+            user_id = first_order.user_id.id
             cart_items = Cart.objects.filter(u_id=user_id, status='Active')
             cart_items.delete()
             cart_coupon = CartCoupon.objects.filter(user_id=user_id)
@@ -339,10 +346,11 @@ def verify_payment(request):
             if cart_walet:
                 cart_walet.delete()
 
-            alluser = CustomUser.objects.get(id=user_id)
+            alluser = CustomUser.objects.filter(id=user_id)
+            userss = alluser.first()
 
             # Get the registration_id of the user
-            registration_id = alluser.registration_id
+            registration_id = userss.registration_id
             title = "Order Placed Successfully!"
             message = "Your order has been successfully placed at FrozenwalaStore."
             SendNotificationAPI().send_notification(registration_id, title, message)
@@ -387,11 +395,14 @@ class OrderListAPIView(APIView):
 
         # Construct list of dictionaries for each unique order
         order_list = []
+        local_tz = pytz.timezone('Asia/Kolkata')  # Change this to your desired timezone
         for order in unique_orders:
             if order['payment_id']:  # Check if payment_id is not empty or null
+                # Convert UTC to local timezone
+                local_created_at = order['latest_created_at'].astimezone(local_tz)
                 order_dict = {
                     'order_id': order['order_id'],
-                    'created_at': order['latest_created_at'].strftime("%d %b %Y, %I:%M %p"),
+                    'created_at': local_created_at.strftime("%d %b %Y, %I:%M %p"),
                     'total_price': order['total_price'],
                     'status': order['status']
                 }
@@ -529,6 +540,7 @@ def generate_invoice(request):
     # Add title for the invoice
     elements.append(Paragraph(f'Invoice for Order #{order_id}', styles['Title']))
     order = order_items.first()  # Assuming all items belong to the same order
+    order.created_at = order.created_at.astimezone(local_tz)  # Convert to local timezone
     created_at_formatted = order.created_at.strftime('%d %B %Y')  # Format as "day Month Year"
     elements.append(Paragraph(f'Created At: {created_at_formatted}', styles['Normal']))
     elements.append(Paragraph(f'Customer Name: {order.newname}', styles['Normal']))

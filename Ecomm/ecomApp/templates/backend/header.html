@@ -87,7 +87,12 @@
 
 
           <div class="dropdown-divider"></div>
-          <a href="{% url 'backend/logout' %}" class="dropdown-item dropdown-footer">Logout</a>
+              <form method="post" action="{% url 'backend/logout' %}">
+    {% csrf_token %}
+    <button class="dropdown-item dropdown-footer" type="submit">Logout</button>
+</form>
+
+
         </div>
       </li>
     </ul>
