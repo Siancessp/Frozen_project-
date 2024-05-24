@@ -22,6 +22,8 @@ urlpatterns = [
     path('api/product-all/', AllProduct.as_view(), name=''),
     path('api/category/product-all/', CategoryAPIView.as_view(), name=''),
     path('api/categories/', CategoryFetch.as_view(), name=''),
+
+
     path('api/categories/allpro/', CategoryProAPIView.as_view(), name=''),
 
     path('api/five/categories/', CategoryfiveFetch.as_view(), name=''),
@@ -29,6 +31,11 @@ urlpatterns = [
     path('api/recommended_five/', RecommendedfiveAPIView.as_view(), name='recommended_five'),
     path('api/most_popular_five/', MostPopularfiveAPIView.as_view(), name='most_popular_five'),
     path('api/all_five_product/', AllfiveProduct.as_view(), name='all_five_product'),
+
+    path('api/auth/categories/', AuthCategoryFetch.as_view(), name=''),
+    path('api/auth/most-popular/', AuthMostPopularAPIView.as_view(), name=''),
+    path('api/auth/category/product-all/', AuthCategoryAPIView.as_view(), name=''),
+    path('api/auth/product-all/', AuthAllProduct.as_view(), name=''),
 
 ]
 

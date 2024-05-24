@@ -323,3 +323,62 @@ class CategoryProAPIView(APIView):
             return Response(response_data)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+class AuthCategoryFetch(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Fetch all categories
+            categories = Catagory.objects.all()
+
+            # Use list comprehension to filter categories based on status
+            categories = [category for category in categories if category.status]
+
+            # Serialize the filtered categories
+            category_serializer = CategorySerializer(categories, many=True)
+
+            return Response(category_serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+class AuthMostPopularAPIView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        items = Item.objects.filter(most_popular=True, status=True, stock__openingstock__gt=0)
+        serializer = ItemSerializer(items, many=True)
+        return Response(serializer.data)
+
+class AuthCategoryAPIView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Get the category ID from the query parameters
+        category_id = request.query_params.get('category_id')
+
+        try:
+            # Get all items for the specified category ID
+            items = Item.objects.filter(category__id=category_id)
+
+            # Filter items where status is True using list comprehension
+            items = [item for item in items if item.status]
+
+            serializer = ItemSerializer(items, many=True)
+            return Response(serializer.data)
+        except Item.DoesNotExist:
+            return Response({"error": "Category does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class AuthAllProduct(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        items = Item.objects.all()
+        items = [item for item in items if item.status]
+        serializer = ItemSerializer(items, many=True)
+        return Response(serializer.data)
