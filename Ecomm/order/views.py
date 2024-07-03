@@ -173,7 +173,8 @@ def update_status(request, id):
         except (TypeError, ValueError):
             # Handle the case where selected_status_str is not a valid integer
             messages.error(request, 'Invalid status value!')
-            return redirect(request.META.get('HTTP_REFERER', 'fallback_url'))
+            # return redirect(request.META.get('HTTP_REFERER', 'fallback_url'))
+            return redirect('orderapp')  # Redirect to order list page on error
 
         order = Order.objects.get(id=id)
 
@@ -218,7 +219,7 @@ def update_status(request, id):
 
         messages.success(request, 'Status updated successfully!')
 
-    return redirect(request.META.get('HTTP_REFERER', 'fallback_url'))  # Replace with your actual redirect URL
+    return redirect('orderapp')  # Redirect to order list page on error
 
 
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_SECRET_KEY))
