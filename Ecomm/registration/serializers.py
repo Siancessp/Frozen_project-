@@ -13,7 +13,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # Set the walet attribute to 0.0 in the validated_data dictionary
-        validated_data['walet'] = 11.0
+        # validated_data['walet'] = 11.0
 
         # Create the user with the updated validated_data
         user = CustomUser.objects.create_user(**validated_data)
@@ -50,4 +50,12 @@ from .models import Address
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
+        fields = '__all__'
+# address/serializers.py
+from rest_framework import serializers
+from .models import AddressAdmin
+
+class AddressAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AddressAdmin
         fields = '__all__'

@@ -16,6 +16,8 @@ from ecomApp.models import Catagory
 from ecomApp.models import Product
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from walet.models import PurchaseBenefit
+
 #for noww...
 class OrderView(APIView):
     def post(self, request):
@@ -133,6 +135,7 @@ def returnaccepted(request, catagory_id):
 
 
 
+from walet.views import calculate_purchase_benefit  # Adjust the import path as per your application structure
 
 
 
@@ -255,6 +258,7 @@ def create_order(request):
 
             # Get cart items for the user
             cart_items = Cart.objects.filter(u_id=user_id, status='Active')
+            max_benefit_percentage, wallet_value = calculate_purchase_benefit(user_id, total_amount)
 
             # Create orders for each item in the cart
             for cart_item in cart_items:
@@ -264,7 +268,8 @@ def create_order(request):
                     product_id=cart_item.product_id,
                     payment_id='',  # Leave payment_id empty initially
                     couponcode=coupon_code,
-                    walet_value=walet_value,
+                    walet_value=wallet_value,
+                    percentage_benefit=max_benefit_percentage,  # Save the percentage benefit
                     pick_up=pick_up,
                     status=1,  # Set initial status
                     quantity=cart_item.quantity,

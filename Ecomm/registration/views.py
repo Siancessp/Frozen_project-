@@ -20,7 +20,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import CustomUserSerializer,ProfileSerializer,ProfileUpdateSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from django.db import transaction
+from walet.models import Walet
 # @api_view(['POST'])
 # def register_user(request):
 #     if request.method == 'POST':
@@ -62,39 +63,77 @@ AUTH_USER_MODEL = 'ecomApp.CustomUser'
 
 
 class RegistrationView(APIView):
+    # def post(self, request):
+    #     request_data = json.loads(request.body.decode('utf-8'))
+    #
+    #     serializer = CustomUserSerializer(data=request_data)  # Use request_data instead of request.data
+    #     print(request_data, "============")
+    #     if serializer.is_valid():
+    #
+    #         phone_number = request_data.get('phone_number')  # Assuming phone_number is in request data
+    #         otp_code = request_data.get('otp_value')  # Assuming OTP code is in request data
+    #         name = request_data.get('name')  # Assuming name is in request data
+    #
+    #         # Verify OTP for the given phone number
+    #         try:
+    #             otp_instance = Otp.objects.get(phone_number=phone_number, otp=otp_code)
+    #         except Otp.DoesNotExist:
+    #             return Response({'error': 'Invalid OTP'}, status=400)
+    #
+    #         # OTP verification successful, proceed with user registration
+    #         user = serializer.save()
+    #         refresh = RefreshToken.for_user(user)
+    #
+    #         # Delete the OTP record
+    #         otp_instance.delete()
+    #
+    #         response_data = {
+    #             'status': 'success',
+    #             'refresh': str(refresh),
+    #             'access': str(refresh.access_token),
+    #         }
+    #         return Response(response_data, status=201)
+    #     return Response(serializer.errors, status=400)
+    #
     def post(self, request):
         request_data = json.loads(request.body.decode('utf-8'))
+        serializer = CustomUserSerializer(data=request_data)
 
-        serializer = CustomUserSerializer(data=request_data)  # Use request_data instead of request.data
-        print(request_data, "============")
         if serializer.is_valid():
+            phone_number = request_data.get('phone_number')
+            otp_code = request_data.get('otp_value')
+            name = request_data.get('name')
 
-            phone_number = request_data.get('phone_number')  # Assuming phone_number is in request data
-            otp_code = request_data.get('otp_value')  # Assuming OTP code is in request data
-            name = request_data.get('name')  # Assuming name is in request data
-
-            # Verify OTP for the given phone number
             try:
-                otp_instance = Otp.objects.get(phone_number=phone_number, otp=otp_code)
+                with transaction.atomic():
+                    # Verify OTP for the given phone number
+                    otp_instance = Otp.objects.get(phone_number=phone_number, otp=otp_code)
+
+                    # OTP verification successful, proceed with user registration
+                    user = serializer.save()
+
+                    # Create initial wallet entry for the user with wallet_value 11
+                    Walet.objects.create(user_id=user.id, wallet_value=11)
+
+                    # Generate refresh token for the user
+                    refresh = RefreshToken.for_user(user)
+
+                    # Delete the OTP record
+                    otp_instance.delete()
+
+                    # Prepare response data
+                    response_data = {
+                        'status': 'success',
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                    }
+                    return Response(response_data, status=status.HTTP_201_CREATED)
             except Otp.DoesNotExist:
-                return Response({'error': 'Invalid OTP'}, status=400)
+                return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            # OTP verification successful, proceed with user registration
-            user = serializer.save()
-            refresh = RefreshToken.for_user(user)
-
-            # Delete the OTP record
-            otp_instance.delete()
-
-            response_data = {
-                'status': 'success',
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            }
-            return Response(response_data, status=201)
-        return Response(serializer.errors, status=400)
-
-
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 from rest_framework.permissions import AllowAny
 
 
@@ -472,3 +511,111 @@ def loginsend_sms(request):
     else:
         # Return an error response if the request method is not POST
         return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+from .models import AddressAdmin
+from .serializers import AddressAdminSerializer
+
+class AddressAdminList(APIView):
+    permission_classes = [AllowAny]  # Allow access to all users
+
+    def get(self, request):
+        addresses = AddressAdmin.objects.all()
+        serializer = AddressAdminSerializer(addresses, many=True)
+        return Response(serializer.data)
+
+class AddressAdminDetail(APIView):
+    permission_classes = [AllowAny]  # Allow access to all users
+
+    def get(self, request):
+        try:
+            address_id = request.query_params.get('address_id')
+
+            address = AddressAdmin.objects.get(id=address_id)
+        except AddressAdmin.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = AddressAdminSerializer(address)
+        return Response(serializer.data)
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import AddressAdmin
+@login_required(login_url='backend/login')
+def address_list(request):
+    items = AddressAdmin.objects.all()
+    context = {
+        'items': items
+    }
+    return render(request, 'backend/address_list.html', context)
+@login_required(login_url='backend/login')
+def add_address(request):
+    if request.method == "POST":
+        newname = request.POST.get('newname')
+        phone = request.POST.get('phone')
+        address = request.POST.get('address')
+        city = request.POST.get('city')
+        state = request.POST.get('state')
+        country = request.POST.get('country')
+        zip_code = request.POST.get('zip_code')
+        status = 1
+
+        # Create the address object
+        AddressAdmin.objects.create(
+            newname=newname,
+            phone=phone,
+            address=address,
+            city=city,
+            state=state,
+            country=country,
+            zip_code=zip_code,
+            status=status
+        )
+        return redirect('back/address_list')
+
+    return render(request, 'backend/add_address.html')
+@login_required(login_url='backend/login')
+def activate_address(request, address_id):
+    item = get_object_or_404(AddressAdmin, id=address_id)
+    item.status = '1'
+    item.save()
+    return redirect('back/address_list')
+@login_required(login_url='backend/login')
+def deactivate_address(request, address_id):
+    item = get_object_or_404(AddressAdmin, id=address_id)
+    item.status = '0'
+    item.save()
+    return redirect('back/address_list')
+@login_required(login_url='backend/login')
+def delete_address(request, address_id):
+    item = get_object_or_404(AddressAdmin, id=address_id)
+    item.delete()
+    return redirect('back/address_list')
+@login_required(login_url='backend/login')
+def view_address(request, address_id):
+    item = get_object_or_404(AddressAdmin, id=address_id)
+    return render(request, 'backend/view_address.html', {'item': item})
+@login_required(login_url='backend/login')
+def update_address(request, address_id):
+    edit_item = get_object_or_404(AddressAdmin, id=address_id)
+
+    if request.method == "POST":
+        edit_item.newname = request.POST.get('newname')
+        edit_item.phone = request.POST.get('phone')
+        edit_item.address = request.POST.get('address')
+        edit_item.city = request.POST.get('city')
+        edit_item.state = request.POST.get('state')
+        edit_item.country = request.POST.get('country')
+        edit_item.zip_code = request.POST.get('zip_code')
+        edit_item.save()
+        return redirect('back/address_list')
+
+    return render(request, 'backend/edit_address.html', {'item': edit_item})
+@login_required(login_url='backend/login')
+def edit_address(request, address_id):
+    sel_item = get_object_or_404(AddressAdmin, id=address_id)
+    all_items = AddressAdmin.objects.all()
+
+    context = {
+        'all_items': all_items,
+        'item': sel_item,
+    }
+    return render(request, 'backend/edit_address.html', context)

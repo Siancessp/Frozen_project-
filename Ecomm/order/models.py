@@ -36,6 +36,8 @@ class Order(models.Model):
 
     dicounted_price=models.CharField(max_length=50)
     walet_value=models.CharField(max_length=50)
+    percentage_benefit = models.FloatField(default=0.0)  # Added field for percentage benefit
+
     pick_up=models.CharField(max_length=50)
     previous_price=models.CharField(max_length=50)
     delivery_price=models.CharField(max_length=50)
