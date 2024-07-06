@@ -65,6 +65,31 @@ class UpdateWallet(APIView):
 from decimal import Decimal
 from decimal import Decimal
 
+# def calculate_purchase_benefit(user_id, total_amount):
+#     max_benefit_percentage = Decimal('0')
+#     wallet_value = Decimal('0')
+#
+#     # Fetch purchase benefits and iterate through them
+#     purchase_benefits = PurchaseBenefit.objects.filter(status='1')
+#
+#     for benefit in purchase_benefits:
+#         if total_amount >= Decimal(benefit.price) and benefit.benefit_percentage > max_benefit_percentage:
+#             max_benefit_percentage = Decimal(benefit.benefit_percentage)
+#             wallet_value =  Decimal(total_amount) * (max_benefit_percentage / Decimal('100'))
+#
+#     # Convert wallet_value to int if necessary
+#     wallet_value = int(wallet_value)
+#
+#     # Update wallet model amount
+#     try:
+#         wallet = Walet.objects.get(user_id=user_id)
+#         wallet.wallet_value += wallet_value
+#         wallet.save()
+#     except Walet.DoesNotExist:
+#         Walet.objects.create(user_id=user_id, wallet_value=wallet_value)
+#
+#     return max_benefit_percentage, wallet_value
+
 def calculate_purchase_benefit(user_id, total_amount):
     max_benefit_percentage = Decimal('0')
     wallet_value = Decimal('0')
@@ -75,17 +100,227 @@ def calculate_purchase_benefit(user_id, total_amount):
     for benefit in purchase_benefits:
         if total_amount >= Decimal(benefit.price) and benefit.benefit_percentage > max_benefit_percentage:
             max_benefit_percentage = Decimal(benefit.benefit_percentage)
-            wallet_value =  Decimal(total_amount) * (max_benefit_percentage / Decimal('100'))
+            wallet_value = Decimal(total_amount) * (max_benefit_percentage / Decimal('100'))
 
     # Convert wallet_value to int if necessary
     wallet_value = int(wallet_value)
 
-    # Update wallet model amount
+    # Update CustomUser's wallet_value
     try:
-        wallet = Walet.objects.get(user_id=user_id)
-        wallet.wallet_value += wallet_value
-        wallet.save()
-    except Walet.DoesNotExist:
-        Walet.objects.create(user_id=user_id, wallet_value=wallet_value)
+        user = CustomUser.objects.get(id=user_id)
+        user.walet += wallet_value
+        user.save()
+    except CustomUser.DoesNotExist:
+        CustomUser.objects.create(id=user_id, wallet_value=wallet_value)
 
     return max_benefit_percentage, wallet_value
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import PurchaseBenefit
+
+@login_required(login_url='backend/login')
+def purchase_benefit_list(request):
+    benefits = PurchaseBenefit.objects.all()
+    context = {
+        'benefits': benefits
+    }
+    return render(request, 'backend/purchase_benefit_list.html', context)
+
+@login_required(login_url='backend/login')
+def add_purchase_benefit(request):
+    if request.method == "POST":
+        price = request.POST.get('price')
+        benefit_percentage = request.POST.get('benefit_percentage')
+        status = '1'  # Set status to '1' by default
+
+        # Create the purchase benefit object
+        PurchaseBenefit.objects.create(
+            price=price,
+            benefit_percentage=benefit_percentage,
+            status=status
+        )
+        return redirect('purchase_benefit_list')
+
+    return render(request, 'backend/add_purchase_benefit.html')
+
+@login_required(login_url='backend/login')
+def activate_purchase_benefit(request, benefit_id):
+    benefit = get_object_or_404(PurchaseBenefit, id=benefit_id)
+    benefit.status = '1'
+    benefit.save()
+    return redirect('purchase_benefit_list')
+
+@login_required(login_url='backend/login')
+def deactivate_purchase_benefit(request, benefit_id):
+    benefit = get_object_or_404(PurchaseBenefit, id=benefit_id)
+    benefit.status = '0'
+    benefit.save()
+    return redirect('purchase_benefit_list')
+
+@login_required(login_url='backend/login')
+def delete_purchase_benefit(request, benefit_id):
+    benefit = get_object_or_404(PurchaseBenefit, id=benefit_id)
+    benefit.delete()
+    return redirect('purchase_benefit_list')
+
+@login_required(login_url='backend/login')
+def view_purchase_benefit(request, benefit_id):
+    benefit = get_object_or_404(PurchaseBenefit, id=benefit_id)
+    return render(request, 'backend/view_purchase_benefit.html', {'item': benefit})
+
+@login_required(login_url='backend/login')
+def update_purchase_benefit(request, benefit_id):
+    benefit = get_object_or_404(PurchaseBenefit, id=benefit_id)
+
+    if request.method == "POST":
+        benefit.price = request.POST.get('price')
+        benefit.benefit_percentage = request.POST.get('benefit_percentage')
+        benefit.status = request.POST.get('status', '1')  # Set status to '1' by default if not provided
+        benefit.save()
+        return redirect('purchase_benefit_list')
+
+    return render(request, 'backend/edit_purchase_benefit.html', {'item': benefit})
+
+@login_required(login_url='backend/login')
+def edit_purchase_benefit(request, benefit_id):
+    benefit = get_object_or_404(PurchaseBenefit, id=benefit_id)
+    all_benefits = PurchaseBenefit.objects.all()
+
+    context = {
+        'all_benefits': all_benefits,
+        'benefit': benefit,
+    }
+    return render(request, 'backend/edit_purchase_benefit.html', context)
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import InstallationBenefit
+
+@login_required(login_url='backend/login')
+def installation_benefit_list(request):
+    items = InstallationBenefit.objects.all()
+    context = {
+        'items': items
+    }
+    return render(request, 'backend/installation_benefit_list.html', context)
+
+@login_required(login_url='backend/login')
+def add_installation_benefit(request):
+    if request.method == "POST":
+        price = request.POST.get('price')
+        status = '1'
+
+        InstallationBenefit.objects.create(
+            price=price,
+            status=status
+        )
+        return redirect('installation_benefit_list')
+
+    return render(request, 'backend/add_installation_benefit.html')
+
+@login_required(login_url='backend/login')
+def activate_installation_benefit(request, benefit_id):
+    item = get_object_or_404(InstallationBenefit, id=benefit_id)
+    item.status = '1'
+    item.save()
+    return redirect('installation_benefit_list')
+
+@login_required(login_url='backend/login')
+def deactivate_installation_benefit(request, benefit_id):
+    item = get_object_or_404(InstallationBenefit, id=benefit_id)
+    item.status = '0'
+    item.save()
+    return redirect('installation_benefit_list')
+
+@login_required(login_url='backend/login')
+def delete_installation_benefit(request, benefit_id):
+    item = get_object_or_404(InstallationBenefit, id=benefit_id)
+    item.delete()
+    return redirect('installation_benefit_list')
+
+@login_required(login_url='backend/login')
+def view_installation_benefit(request, benefit_id):
+    item = get_object_or_404(InstallationBenefit, id=benefit_id)
+    return render(request, 'backend/view_installation_benefit.html', {'item': item})
+
+@login_required(login_url='backend/login')
+def update_installation_benefit(request, benefit_id):
+    edit_item = get_object_or_404(InstallationBenefit, id=benefit_id)
+
+    if request.method == "POST":
+        edit_item.price = request.POST.get('price')
+        edit_item.status = request.POST.get('status')
+        edit_item.save()
+        return redirect('installation_benefit_list')
+
+    return render(request, 'backend/edit_installation_benefit.html', {'item': edit_item})
+
+
+
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import ReferralBenefit
+
+@login_required(login_url='backend/login')
+def referral_benefit_list(request):
+    items = ReferralBenefit.objects.all()
+    context = {
+        'items': items
+    }
+    return render(request, 'backend/referral_benefit_list.html', context)
+
+@login_required(login_url='backend/login')
+def add_referral_benefit(request):
+    if request.method == "POST":
+        price = request.POST.get('price')
+        status = '1'
+
+        ReferralBenefit.objects.create(
+            price=price,
+            status=status
+        )
+        return redirect('referral_benefit_list')
+
+    return render(request, 'backend/add_referral_benefit.html')
+
+@login_required(login_url='backend/login')
+def activate_referral_benefit(request, benefit_id):
+    item = get_object_or_404(ReferralBenefit, id=benefit_id)
+    item.status = '1'
+    item.save()
+    return redirect('referral_benefit_list')
+
+@login_required(login_url='backend/login')
+def deactivate_referral_benefit(request, benefit_id):
+    item = get_object_or_404(ReferralBenefit, id=benefit_id)
+    item.status = '0'
+    item.save()
+    return redirect('referral_benefit_list')
+
+@login_required(login_url='backend/login')
+def delete_referral_benefit(request, benefit_id):
+    item = get_object_or_404(ReferralBenefit, id=benefit_id)
+    item.delete()
+    return redirect('referral_benefit_list')
+
+@login_required(login_url='backend/login')
+def view_referral_benefit(request, benefit_id):
+    item = get_object_or_404(ReferralBenefit, id=benefit_id)
+    return render(request, 'backend/view_referral_benefit.html', {'item': item})
+
+@login_required(login_url='backend/login')
+def update_referral_benefit(request, benefit_id):
+    edit_item = get_object_or_404(ReferralBenefit, id=benefit_id)
+
+    if request.method == "POST":
+        edit_item.price = request.POST.get('price')
+        edit_item.status = request.POST.get('status')
+        edit_item.save()
+        return redirect('referral_benefit_list')
+
+    return render(request, 'backend/edit_referral_benefit.html', {'item': edit_item})

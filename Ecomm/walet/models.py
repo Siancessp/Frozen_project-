@@ -14,3 +14,23 @@ class PurchaseBenefit(models.Model):
 
     def __str__(self):
         return f"PurchaseBenefit #{self.id}"
+
+
+from django.db import models
+
+class InstallationBenefit(models.Model):
+    id = models.AutoField(primary_key=True)
+    price = models.CharField(max_length=50,blank=True)
+    status = models.CharField(max_length=50, default='1')
+
+    def __str__(self):
+        return f"Installation Benefit - {self.price} "
+
+
+class ReferralBenefit(models.Model):
+    id = models.AutoField(primary_key=True)
+    price = models.CharField(max_length=50,blank=True)
+    status = models.CharField(max_length=50, default='1')
+
+    def __str__(self):
+        return f"Referral Benefit - {self.price} "

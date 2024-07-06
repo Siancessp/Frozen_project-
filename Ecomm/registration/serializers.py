@@ -22,6 +22,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    referral_link = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
@@ -31,6 +32,12 @@ class ProfileSerializer(serializers.ModelSerializer):
             'phone_number': {'required': False},
             'email': {'required': False},
         }
+
+    def get_referral_link(self, obj):
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(f'/ref/frzn/?referral_code={obj.referral_code}')
+        return None
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser

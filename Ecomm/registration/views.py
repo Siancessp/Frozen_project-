@@ -21,7 +21,7 @@ from rest_framework.views import APIView
 from .serializers import CustomUserSerializer,ProfileSerializer,ProfileUpdateSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import transaction
-from walet.models import Walet
+from walet.models import Walet,ReferralBenefit,InstallationBenefit
 # @api_view(['POST'])
 # def register_user(request):
 #     if request.method == 'POST':
@@ -57,10 +57,32 @@ from walet.models import Walet
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import check_password
-
+import random
+from django.http import HttpResponseRedirect
+from django.views import View
+from .models import ReferralLink
+import string
 AUTH_USER_MODEL = 'ecomApp.CustomUser'
+from random import choices
+from string import ascii_uppercase, digits
+from decimal import Decimal
+class RegistrationViewuu(APIView):
 
+    def get(self, request, *args, **kwargs):
+        referral_code = request.GET.get('referral_code')
 
+        # Get the client's IP address
+        if 'HTTP_X_FORWARDED_FOR' in request.META:
+            ip_address = request.META['HTTP_X_FORWARDED_FOR'].split(',')[0].strip()
+        else:
+            ip_address = request.META.get('REMOTE_ADDR')
+
+        if referral_code:
+            # Log the referral link click
+            ReferralLink.objects.create(referral_code=referral_code, ip_address=ip_address)
+
+        # Redirect to your registration or target page
+        return HttpResponseRedirect('/register/')
 
 class RegistrationView(APIView):
     # def post(self, request):
@@ -95,8 +117,9 @@ class RegistrationView(APIView):
     #         return Response(response_data, status=201)
     #     return Response(serializer.errors, status=400)
     #
+
     def post(self, request):
-        request_data = json.loads(request.body.decode('utf-8'))
+        request_data = request.data
         serializer = CustomUserSerializer(data=request_data)
 
         if serializer.is_valid():
@@ -112,8 +135,26 @@ class RegistrationView(APIView):
                     # OTP verification successful, proceed with user registration
                     user = serializer.save()
 
-                    # Create initial wallet entry for the user with wallet_value 11
-                    Walet.objects.create(user_id=user.id, wallet_value=11)
+                    # Generate referral code
+                    referral_code = ''.join(choices(ascii_uppercase + digits, k=6))
+
+                    # Save referral code to CustomUser instance
+                    user.referral_code = referral_code
+
+                    # Get the first installation benefit
+                    first_installation_benefit = InstallationBenefit.objects.first()
+
+                    # Assign wallet value to CustomUser instance
+                    if first_installation_benefit:
+                        user.walet = Decimal(first_installation_benefit.price)
+                    else:
+                        user.walet = Decimal(0)  # Handle case when no installation benefit is available
+
+                    # Check for referral benefit
+                    self.apply_referral_benefit(request, user)
+
+                    # Save user with referral code and wallet value
+                    user.save()
 
                     # Generate refresh token for the user
                     refresh = RefreshToken.for_user(user)
@@ -134,6 +175,30 @@ class RegistrationView(APIView):
                 return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def apply_referral_benefit(self, request, user):
+        # Get the client's IP address
+        if 'HTTP_X_FORWARDED_FOR' in request.META:
+            ip_address = request.META['HTTP_X_FORWARDED_FOR'].split(',')[0].strip()
+        else:
+            ip_address = request.META.get('REMOTE_ADDR')
+
+        # Check if the IP address exists in the ReferralLink model
+        referral_links = ReferralLink.objects.filter(ip_address=ip_address)
+
+        if referral_links.exists():
+            referral_link = referral_links.first()
+            referrer = CustomUser.objects.filter(referral_code=referral_link.referral_code).first()
+            if referrer:
+                # Get the referral benefit amount
+                referral_benefit = Decimal(ReferralBenefit.objects.first().price)
+                referrer.walet = Decimal(referrer.walet) + referral_benefit
+                referrer.save()
+
+                # Delete all referral link objects with the same IP address
+                referral_links.delete()
+
+
 from rest_framework.permissions import AllowAny
 
 
@@ -288,8 +353,8 @@ class ProfileAPI(APIView):
         """
         user_id = request.query_params.get('user_id')
         try:
-            profile = CustomUser.objects.get(pk=user_id)
-            serializer = ProfileSerializer(profile)
+            profile = CustomUser.objects.get(id=user_id)
+            serializer = ProfileSerializer(profile, context={'request': request})
             return Response(serializer.data)
         except CustomUser.DoesNotExist:
             return Response({"error": "User does not exist"}, status=status.HTTP_404_NOT_FOUND)
@@ -323,6 +388,13 @@ class ProfileAPI(APIView):
 
         profile.save()
         return Response({"success": "Profile updated successfully"}, status=status.HTTP_200_OK)
+# views.py
+
+from django.shortcuts import redirect
+from django.views import View
+from django.utils import timezone
+from .models import ReferralLink
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status

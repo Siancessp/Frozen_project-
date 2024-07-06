@@ -4,6 +4,8 @@ from django.urls import path
 
 urlpatterns = [
     path('register/', RegistrationView.as_view(), name='register'),
+    path('ref/frzn/', RegistrationViewuu.as_view(), name='register'),
+
     path('login/', LoginView.as_view(), name='login'),
 
     path('api/addresses/', AddressList.as_view(), name='address-list'),
