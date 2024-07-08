@@ -37,7 +37,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 
 class UpdateWallet(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
 
     def post(self, request):
@@ -54,11 +54,11 @@ class UpdateWallet(APIView):
         wallet, created = Walet.objects.get_or_create(user_id=user.id)
 
         # Get amount to add to the wallet (user.walet or 0 if not provided)
-        amount_to_add = user.walet
+        amount_to_add = int(user.walet)  # Assuming user.walet is a number
 
         # Ensure amount_to_add does not exceed cart_price
-        if amount_to_add > cart_price:
-            amount_to_add = cart_price
+        if amount_to_add > int(cart_price):
+            amount_to_add = int(cart_price)
 
         # Add amount to the wallet
         wallet.wallet_value += amount_to_add
@@ -327,6 +327,8 @@ def update_referral_benefit(request, benefit_id):
         return redirect('referral_benefit_list')
 
     return render(request, 'backend/edit_referral_benefit.html', {'item': edit_item})
+
+
 class RemoveWallet(APIView):
     permission_classes = [IsAuthenticated]
 
