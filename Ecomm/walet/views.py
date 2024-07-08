@@ -54,7 +54,7 @@ class UpdateWallet(APIView):
         wallet, created = Walet.objects.get_or_create(user_id=user.id)
 
         # Get amount to add to the wallet (user.walet or 0 if not provided)
-        amount_to_add = user.walet if hasattr(user, 'walet') else 0
+        amount_to_add = user.walet
 
         # Ensure amount_to_add does not exceed cart_price
         if amount_to_add > cart_price:
