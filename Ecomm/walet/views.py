@@ -39,8 +39,10 @@ from rest_framework.decorators import api_view, permission_classes
 class UpdateWallet(APIView):
     permission_classes = [IsAuthenticated]
 
+
     def post(self, request):
         user_id = request.data.get('user_id')
+        cart_price = request.data.get('cart_price')
 
         # Check if user exists
         try:
@@ -48,20 +50,21 @@ class UpdateWallet(APIView):
         except CustomUser.DoesNotExist:
             return Response({"error": "User does not exist."}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Get or create wallet for the user
         wallet, created = Walet.objects.get_or_create(user_id=user.id)
 
-        # Get amount to subtract from the wallet
-        try:
-            amount_to_subtract = user.walet
-        except AttributeError:
-            return Response({"error": "Wallet amount not provided."}, status=status.HTTP_400_BAD_REQUEST)
+        # Get amount to add to the wallet (user.walet or 0 if not provided)
+        amount_to_add = user.walet if hasattr(user, 'walet') else 0
 
+        # Ensure amount_to_add does not exceed cart_price
+        if amount_to_add > cart_price:
+            amount_to_add = cart_price
 
-        wallet.wallet_value += amount_to_subtract
+        # Add amount to the wallet
+        wallet.wallet_value += amount_to_add
         wallet.save()
-        user.walet-=amount_to_subtract
-        user.save()
-        return Response({"success"})
+
+        return Response({"success": "Wallet updated successfully."}, status=status.HTTP_200_OK)
 from decimal import Decimal
 from decimal import Decimal
 

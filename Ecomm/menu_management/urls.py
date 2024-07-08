@@ -36,7 +36,7 @@ urlpatterns = [
     path('api/auth/most-popular/', AuthMostPopularAPIView.as_view(), name=''),
     path('api/auth/category/product-all/', AuthCategoryAPIView.as_view(), name=''),
     path('api/auth/product-all/', AuthAllProduct.as_view(), name=''),
-
+    path('api/item/', ProductsId.as_view(), name='')
 ]
 
 

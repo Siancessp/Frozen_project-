@@ -382,3 +382,14 @@ class AuthAllProduct(APIView):
         items = [item for item in items if item.status]
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
+
+class ProductsId(APIView):
+    def get(self, request):
+        pro_id = request.query_params.get('product_id')
+        if not pro_id:
+            return Response({'error': 'Product ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        item = get_object_or_404(Item, id=pro_id)
+        serializer = ItemSerializer(item)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
