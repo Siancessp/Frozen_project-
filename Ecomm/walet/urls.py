@@ -35,7 +35,7 @@ urlpatterns = [
     path('backend/referral_benefit/delete/<int:benefit_id>/', delete_referral_benefit, name='delete_referral_benefit'),
     path('backend/referral_benefit/view/<int:benefit_id>/', view_referral_benefit, name='view_referral_benefit'),
     path('backend/referral_benefit/update/<int:benefit_id>/', update_referral_benefit, name='update_referral_benefit'),
-
+    path('api/remove_wallet/', RemoveWallet.as_view(), name='remove_wallet'),
 
     # Other URL patterns...
 ]
