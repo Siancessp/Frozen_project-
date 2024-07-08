@@ -327,3 +327,25 @@ def update_referral_benefit(request, benefit_id):
         return redirect('referral_benefit_list')
 
     return render(request, 'backend/edit_referral_benefit.html', {'item': edit_item})
+class RemoveWallet(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user_id = request.query_params.get('user_id')
+
+        if not user_id:
+            return Response({"error": "User ID parameter is required"}, status=400)
+
+        # Check if user exists
+        try:
+            user = CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "User does not exist."}, status=404)
+
+        # Check if wallet exists for the user
+        try:
+            wallet = Walet.objects.get(user_id=user.id)
+            wallet.delete()
+            return Response({"success": "Wallet deleted successfully."}, status=200)
+        except Walet.DoesNotExist:
+            return Response({"error": "Wallet does not exist for the user."}, status=404)
