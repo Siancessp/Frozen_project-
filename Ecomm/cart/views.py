@@ -373,3 +373,14 @@ class CartDetailsMainAPIView(APIView):
             return Response(serializer.data[0], status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UniqueProductCountView(APIView):
+    def get(self, request, *args, **kwargs):
+        user_id = request.query_params.get('user_id', None)
+        if user_id is None:
+            return Response({"error": "user_id query parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        unique_product_count = Cart.objects.filter(u_id=user_id).values('product_id').distinct().count()
+
+        return Response({"unique_product_count": unique_product_count}, status=status.HTTP_200_OK)
