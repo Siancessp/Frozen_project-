@@ -63,7 +63,9 @@ class UpdateWallet(APIView):
         # Add amount to the wallet
         wallet.wallet_value += amount_to_add
         wallet.save()
-
+        user = CustomUser.objects.get(id=user_id)
+        user.walet -= amount_to_add
+        user.save()
         return Response({"success": "Wallet updated successfully."}, status=status.HTTP_200_OK)
 from decimal import Decimal
 from decimal import Decimal
@@ -347,7 +349,17 @@ class RemoveWallet(APIView):
         # Check if wallet exists for the user
         try:
             wallet = Walet.objects.get(user_id=user.id)
+            wallet_value = wallet.wallet_value  # Get the wallet value before deleting
+
+            # Delete the wallet
             wallet.delete()
-            return Response({"success": "Wallet deleted successfully."}, status=200)
+
+            # Add wallet value back to CustomUser's walet
+            user.walet += wallet_value
+            user.save()
+
+            return Response({"success": "Wallet deleted successfully and amount added back to user's wallet."},
+                            status=200)
+
         except Walet.DoesNotExist:
             return Response({"error": "Wallet does not exist for the user."}, status=404)
