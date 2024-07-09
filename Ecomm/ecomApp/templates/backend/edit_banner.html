@@ -65,10 +65,14 @@
                                 <div class="col-lg-6">
                                     <label for="category">Category:</label>
                                     <select id="category" name="category" class="form-control">
-                                        {% for category in categories %}
-                                        <option value="{{ category.id }}">{{ category.name }}</option>
-                                        {% endfor %}
-                                    </select>
+    <option value="" {% if not item.category_id %}selected{% endif %}>Home</option>
+    {% for category in categories %}
+        <option value="{{ category.id }}" {% if item.category_id == category.id %}selected{% endif %}>
+            {{ category.name }}
+        </option>
+    {% endfor %}
+</select>
+
                                 </div>
                             </div>
 

@@ -73,7 +73,7 @@
                 <a href="{% url 'activate_ban' item.id %}" class="btn btn-success text-white">Activate</a>
                 {% endif %}
             </td>
-            <td>{{ item.category.name }}</td>
+            <td>{%if item.category %}{{ item.category.name }} {% else%} Home {% endif %}</td>
             <td>
                 <a href="{% url 'edit_ban' item.id %}" class="edit" title="Edit" data-toggle="tooltip"><i style="color: #ff9900;" class="fa fa-edit"></i></a>
                 <a href="{% url 'view_ban' item.id %}" class="view" title="View" data-toggle="tooltip"><i style="color: #ff9900;" class="fa fa-eye"></i></a>

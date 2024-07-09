@@ -343,10 +343,6 @@ def verify_payment(request):
 
             # Get the user_id from the first order
             user_id = first_order.user_id.id
-            usernew = CustomUser.objects.get(id=user_id)
-            usernew.walet -= first_order.walet_value
-            usernew.save()
-
             cart_items = Cart.objects.filter(u_id=user_id, status='Active')
             cart_items.delete()
             cart_coupon = CartCoupon.objects.filter(user_id=user_id)
