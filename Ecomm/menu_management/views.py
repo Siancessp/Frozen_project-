@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Item
-from ecomApp.models  import Catagory,Stock
+from ecomApp.models  import Catagory, DeliveryCharge
 from django.db.models import Q# Create your views here.
 @login_required(login_url='backend/login')
 def item_list(request):
@@ -205,6 +205,8 @@ class AllProduct(APIView):
         items = [item for item in items if item.status]
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
+
+
 from django.http import Http404
 from rest_framework import status
 
@@ -380,8 +382,15 @@ class AuthAllProduct(APIView):
     def get(self, request):
         items = Item.objects.all()
         items = [item for item in items if item.status]
+        delivery_charge = DeliveryCharge.objects.first()
+        if not delivery_charge:
+            delivery_charge = 0
+        else:
+            delivery_charge = delivery_charge.charge
         serializer = ItemSerializer(items, many=True)
-        return Response(serializer.data)
+        data = serializer.data
+        data.append({"DeliveryChange": delivery_charge})
+        return Response(data)
 
 class ProductsId(APIView):
     def get(self, request):

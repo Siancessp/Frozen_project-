@@ -14,7 +14,7 @@ import json
 from .models import Notification
 from ecomApp.models import CustomUser
 # Initialize FCM with your server key
-push_service = FCMNotification(api_key="AAAAhkj7a5w:APA91bGXnsbD6RKIH7oDQvwl_j8mGKAlT58mww6zuLwVHPws7XBhhCHezSzy6VTtVPku2r_f-NA7TVmstWMSnNs4Ixv_r_exR2wUzSGCCeCLjYLJ7EkNRz86Q6AwmHHUgwKvmH1DHOd6")
+# push_service = FCMNotification(api_key="AAAAhkj7a5w:APA91bGXnsbD6RKIH7oDQvwl_j8mGKAlT58mww6zuLwVHPws7XBhhCHezSzy6VTtVPku2r_f-NA7TVmstWMSnNs4Ixv_r_exR2wUzSGCCeCLjYLJ7EkNRz86Q6AwmHHUgwKvmH1DHOd6")
 
 import requests
 # Define a class-based view for sending notifications
