@@ -389,7 +389,7 @@ class AuthAllProduct(APIView):
             delivery_charge = delivery_charge.charge
         serializer = ItemSerializer(items, many=True)
         data = serializer.data
-        data.append({"DeliveryChange": delivery_charge})
+        data.append("DeliveryChange": delivery_charge)
         return Response(data)
 
 class ProductsId(APIView):

@@ -79,7 +79,7 @@ class RegistrationViewuu(APIView):
 
         if referral_code:
             # Log the referral link click
-            ReferralLink.objects.create(referral_code=referral_code, ip_address=ip_address)
+            ReferralLink.objects.get_or_create(referral_code=referral_code, ip_address=ip_address)
 
         # Redirect to your registration or target page
         return HttpResponseRedirect('/register/')
@@ -167,6 +167,7 @@ class RegistrationView(APIView):
                         'status': 'success',
                         'refresh': str(refresh),
                         'access': str(refresh.access_token),
+                        'user_id': user.id
                     }
                     return Response(response_data, status=status.HTTP_201_CREATED)
             except Otp.DoesNotExist:
