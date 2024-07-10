@@ -11,9 +11,11 @@ class CartSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['product_id'] = instance.product_id.id
         representation['item_photo'] = instance.product_id.item_photo.url if instance.product_id.item_photo else None
+        representation['product_image'] = instance.product_id.item_photo.url if instance.product_id.item_photo else None
         representation['item_new_price'] = "{:.2f}".format(instance.product_id.item_new_price)
         representation['totalPrice'] = "{:.2f}".format(instance.price)
         representation['title'] = instance.product_id.title
+        representation['product_name'] = instance.product_id.title
         return representation
 
 class CartGetSerializer(serializers.ModelSerializer):
