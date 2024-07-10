@@ -8,6 +8,7 @@ class Item(models.Model):
     item_photo = models.ImageField(upload_to='item_photos/')
     # item_quantity = models.PositiveIntegerField()
     # item_measurement=models.CharField(max_length=10, default='')
+    non_veg = models.BooleanField(default=False)
     item_old_price = models.FloatField()
     makingprice = models.FloatField()
     discount = models.IntegerField()
