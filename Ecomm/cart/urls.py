@@ -20,6 +20,6 @@ urlpatterns = [
     path('api/get_total_price/', CartTotalPrice.as_view(), name='CartTotalPrice'),
 
     path('api/send_coupon/', send_coupon, name='send_coupon'),
-path('api/unique-product-count/', UniqueProductCountView.as_view(), name='unique-product-count'),
+    path('api/unique-product-count/', UniqueProductCountView.as_view(), name='unique-product-count'),
 
 ]
