@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'walet',
     'report',
     'notification',
-    'chart'
+    'chart',
+    'influencer',
 ]
 
 REST_FRAMEWORK = {
