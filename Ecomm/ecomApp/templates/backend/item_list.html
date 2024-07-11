@@ -45,6 +45,8 @@
             <th>Item Name</th>
             <th>Item Description</th>
             <th>Item Photo</th>
+                        <th>Veg Or Non-Veg</th>
+
 <!--            <th>Item Quantity</th>-->
             <th>Making Price</th>
             <th>MRP</th>
@@ -68,6 +70,13 @@
                 <img src="{{ item.item_photo.url }}" alt="Item Image" width="100" height="70">
                 {% else %}
         <img src=" {%  static 'assets/images/Frozenwala logo.png' %} " alt="Image" width="100"
+                {% endif %}
+            </td>
+            <td>
+                {% if item.veg == '1' %}
+                <a href="{% url 'veg' item.id %}" class="btn btn-danger btn-sm text-white">Non-Veg</a>
+                {% else %}
+                <a href="{% url 'nonveg' item.id %}" class="btn btn-success text-white">Veg</a>
                 {% endif %}
             </td>
 <!--            <td>{{ item.item_quantity }}{{ item.item_measurement }}</td>-->

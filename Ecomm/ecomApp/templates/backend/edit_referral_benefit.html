@@ -24,21 +24,21 @@
                 <br>
                 <div class="card card-info">
                     <div class="card-header">
-                        <h3 class="card-title">Edit Installation Benifit</h3>
+                        <h3 class="card-title">Edit Referral Benifit</h3>
                     </div>
                     <br>
                     <div class="card-body">
                     {% if sel_proform %}
-                        <form method="POST" enctype="multipart/form-data" action="{%url 'update_installation_benefit' sel_proform.id%}">
+                        <form method="POST" enctype="multipart/form-data" action="{%url 'update_referral_benefit' sel_proform.id%}">
                             {% csrf_token %}
                             <div class="row">
                                 <div class="col-lg-6">
-                                    <label for="title">Installation Benifit:</label>
+                                    <label for="title">Referral Benifit:</label>
                                     <input type="text" id="title" value="{{sel_proform.price}}" name="price" maxlength="255" required class="form-control">
                                 </div>
                                 <div class="mt-4 col-lg-6">
                                 <button type="submit" class="btn btn-primary">Edit</button>
-                                <a href="{% url 'installation_benefit_list' %}" class="btn btn-danger">Back</a>
+                                <a href="{% url 'referral_benefit_list' %}" class="btn btn-danger">Back</a>
                             </div>
                             </div>
 

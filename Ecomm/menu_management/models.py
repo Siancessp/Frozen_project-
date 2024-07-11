@@ -1,6 +1,7 @@
 from django.db import models
 from ecomApp.models import Catagory
-# Create your models here.
+
+
 class Item(models.Model):
     id = models.AutoField(primary_key=True)
     title=models.CharField(max_length=500)
@@ -14,6 +15,7 @@ class Item(models.Model):
     discount = models.IntegerField()
     item_new_price = models.FloatField()
     status= models.BooleanField(default=True)
+    veg=models.CharField(max_length=10,default='1')
     category = models.ForeignKey(Catagory, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     deal_of_the_day = models.BooleanField(default=False)

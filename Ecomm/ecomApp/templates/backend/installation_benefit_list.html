@@ -43,9 +43,11 @@
                                 <tbody>
                                     {% for item in items %}
                                     <tr>
-                                        <td>{{ item.id }}</td>
+                                        <td>{{ forloop.counter }}</td>
                                         <td>{{ item.price }}</td>
                                         <td>
+                                            <a href="{% url 'update_installation_benefit' item.id %}" class="btn btn-primary btn-sm">Edit</a>
+
                                            <a href="{% url 'delete_installation_benefit' item.id %}" class="btn btn-danger btn-sm">Delete</a>
                                         </td>
                                     </tr>

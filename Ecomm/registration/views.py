@@ -167,7 +167,7 @@ class RegistrationView(APIView):
                         'status': 'success',
                         'refresh': str(refresh),
                         'access': str(refresh.access_token),
-                        'user_id': user.id
+                        'user_id': user.id,
                     }
                     return Response(response_data, status=status.HTTP_201_CREATED)
             except Otp.DoesNotExist:

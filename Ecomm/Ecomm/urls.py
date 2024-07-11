@@ -6,6 +6,8 @@ from django.contrib import admin
 from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
+
+
 urlpatterns = [
     path('base/admin/', admin.site.urls),
     path('base/', include('ecomApp.urls')),
@@ -20,7 +22,9 @@ urlpatterns = [
     path('base/', include('report.urls')),
     path('base/', include('notification.urls')),
     path('base/', include('chart.urls')),
-
+    path('base/', include('influencer.urls')),
 ]
+
 if settings.DEBUG:
     urlpatterns+= static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
+

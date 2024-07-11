@@ -12,35 +12,56 @@ class AddToCartAPIView(APIView):
 
     def post(self, request):
         try:
-            cart = request.data.get('cart')
-            user_id = request.data.get('user_id')
-            user = CustomUser.objects.filter(id=user_id).first()
-            if not user:
-                return Response({"error": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
-
-            for product in cart:
-                item = Item.objects.filter(id=product['id']).first()
-                if item:
-                    cart_item = Cart.objects.filter(product_id=item, u_id=user)
-                    stock = Stock.objects.filter(item_id=item).first()
-                    if cart_item and cart_item.quantity < stock.openingstock:
-                        cart_item.quantity = cart_item.quantity + product['qty']
-                        cart_item.price = item.item_new_price * cart_item.quantity
-                        cart_item.save()
-                    elif not cart_item:
-                        if int(product['qty']) < stock.openingstock:
-                            price = item.item_new_price * int(product['qty'])
-                            quantity = product['qty']
+            # old code
+            product_id = request.data.get('product_id')
+            u_id = request.data.get('u_id')
+            if product_id or u_id: 
+                product = Item.objects.filter(id=product_id).first()
+                if not product:
+                    return Response({"error": "Product does not exist."}, status=status.HTTP_404_NOT_FOUND)
+                user = CustomUser.objects.filter(id=u_id).first()
+                if not user:
+                    return Response({"error": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
+                cart_items = Cart.objects.filter(product_id=product, u_id=user)
+                if cart_items.exists():
+                    cart_item = cart_items.first()
+                    cart_item.quantity += 1
+                    cart_item.price = cart_item.quantity * product.item_new_price
+                else:
+                    cart_item = Cart.objects.create(product_id=product, u_id=user, quantity=1,
+                                                    price=product.item_new_price)
+                cart_item.save()
+                serializer = CartSerializer(cart_item)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                # new code
+                cart = request.data.get('cart')
+                user_id = request.data.get('user_id')
+                user = CustomUser.objects.filter(id=user_id).first()
+                if not user:
+                    return Response({"error": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
+                for product in cart:
+                    item = Item.objects.filter(id=product['id']).first()
+                    if item:
+                        cart_item = Cart.objects.filter(product_id=item, u_id=user)
+                        stock = Stock.objects.filter(item_id=item).first()
+                        if cart_item and cart_item.quantity < stock.openingstock:
+                            cart_item.quantity = cart_item.quantity + product['qty']
+                            cart_item.price = item.item_new_price * cart_item.quantity
+                            cart_item.save()
+                        elif not cart_item:
+                            if int(product['qty']) < stock.openingstock:
+                                price = item.item_new_price * int(product['qty'])
+                                quantity = product['qty']
+                            else:
+                                price = item.item_new_price
+                                quantity = 1
+                            Cart.objects.create(product_id=item, u_id=user, quantity=quantity, price=price)
                         else:
-                            price = item.item_new_price
-                            quantity = 1
-                        Cart.objects.create(product_id=item, u_id=user, quantity=quantity, price=price)
-                    else:
-                        return Response({"error": "Out of stock"}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({'status': True}, status=status.HTTP_201_CREATED)
+                            return Response({"error": "Out of stock"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'status': True}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
 class CartDetailsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -146,6 +167,29 @@ class RemoveCartItem(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+# class CartTotalPrice(APIView):
+#     def get(self, request):
+#         try:
+#             # Get the user_id from query parameters
+#             user_id = request.query_params.get('user_id')
+#
+#             # Check if user_id parameter is provided
+#             if user_id is None:
+#                 return Response({"error": "user_id parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#             # Check if user_id is a valid integer
+#             if not str(user_id).isdigit():
+#                 return Response({"error": "Valid user_id parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#             # Retrieve all cart items for the specified user_id
+#             cart_items = Cart.objects.filter(u_id=user_id)
+#
+#             # Calculate total price by summing the prices of all cart items
+#             total_price = sum(cart_item.price for cart_item in cart_items)
+#
+#             return Response({"total_price": total_price}, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 from datetime import date
 from django.utils import timezone
 from ecomApp.models import CustomerCoupon,DeliveryCharge
@@ -307,8 +351,9 @@ class DecreaseQuantityMain(APIView):
         try:
             product_id = request.data.get('product_id')
             user_id = request.data.get('user_id')
-            action = request.data.get('action')
             
+            action = request.data.get('action')
+
             if action == 'remove':
                 Cart.objects.filter(product_id=product_id, u_id=user_id).first().delete()
                 cart_items = Cart.objects.filter(u_id=user_id)

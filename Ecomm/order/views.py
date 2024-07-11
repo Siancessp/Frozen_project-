@@ -1,6 +1,9 @@
 from django.db.models import Q
 from django.shortcuts import render, redirect
 from cart.models import CartCoupon
+from pytz import timezone
+import pytz
+from datetime import datetime
 # Create your views here.
 from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView
@@ -226,6 +229,7 @@ def update_status(request, id):
 
 
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_SECRET_KEY))
+
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -258,7 +262,7 @@ def create_order(request):
 
             # Get cart items for the user
             cart_items = Cart.objects.filter(u_id=user_id, status='Active')
-            max_benefit_percentage, wallet_value = calculate_purchase_benefit(user_id, total_amount)
+            # max_benefit_percentage, wallet_value = calculate_purchase_benefit(user_id, total_amount)
 
             # Create orders for each item in the cart
             for cart_item in cart_items:
@@ -268,8 +272,8 @@ def create_order(request):
                     product_id=cart_item.product_id,
                     payment_id='',  # Leave payment_id empty initially
                     couponcode=coupon_code,
-                    walet_value=wallet_value,
-                    percentage_benefit=max_benefit_percentage,  # Save the percentage benefit
+                    walet_value=walet_value,
+                    # percentage_benefit=max_benefit_percentage,  # Save the percentage benefit
                     pick_up=pick_up,
                     status=1,  # Set initial status
                     quantity=cart_item.quantity,
@@ -340,9 +344,12 @@ def verify_payment(request):
                 stock.openingstock -= quantity
                 stock.save()
             first_order = orders.first()
-
-            # Get the user_id from the first order
             user_id = first_order.user_id.id
+            total_amount = first_order.total_price
+            print(user_id, total_amount)
+            max_benefit_percentage, wallet_value = calculate_purchase_benefit(user_id, total_amount)
+            # Get the user_id from the first order
+
             cart_items = Cart.objects.filter(u_id=user_id, status='Active')
             cart_items.delete()
             cart_coupon = CartCoupon.objects.filter(user_id=user_id)
@@ -401,9 +408,10 @@ class OrderListAPIView(APIView):
 
         # Construct list of dictionaries for each unique order
         order_list = []
-        local_tz = pytz.timezone('Asia/Kolkata')  # Change this to your desired timezone
+        local_tz = pytz.timezone('Asia/Kolkata')
         for order in unique_orders:
-            if order['payment_id']:  # Check if payment_id is not empty or null
+            if order['payment_id']:
+                # Check if payment_id is not empty or null
                 # Convert UTC to local timezone
                 local_created_at = order['latest_created_at'].astimezone(local_tz)
                 order_dict = {
@@ -513,14 +521,39 @@ from django.http import JsonResponse, HttpResponse
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
-
+from django.http import JsonResponse, HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from pytz import timezone
+import pytz
 from .models import Order
 
 from django.http import JsonResponse, HttpResponse
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
 from reportlab.lib import colors
+from django.http import JsonResponse, HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, HRFlowable
 from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+import pytz
+from pytz import timezone
+
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+from reportlab.lib import colors
+from django.http import HttpResponse
+from django.utils.timezone import localtime
+from pytz import timezone
+from datetime import datetime
+
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, Image
+from pathlib import Path  # To handle paths in a cross-platform way
+
 def generate_invoice(request):
     order_id = request.GET.get('order_id')
     if not order_id:
@@ -528,6 +561,7 @@ def generate_invoice(request):
 
     # Retrieve one order's items with the given order_id
     order_items = Order.objects.filter(order_id=order_id)
+    local_tz = timezone('Asia/Kolkata')
 
     if not order_items:
         return JsonResponse({'error': 'No items found for the specified order ID'}, status=404)
@@ -537,58 +571,110 @@ def generate_invoice(request):
     response['Content-Disposition'] = f'attachment; filename=invoice_{order_id}.pdf'
 
     # Create a ReportLab PDF document
-    doc = SimpleDocTemplate(response, pagesize=letter)
+    doc = SimpleDocTemplate(response, pagesize=letter, topMargin=20)  # Adjust topMargin as needed
     styles = getSampleStyleSheet()
 
-    # Build content for the invoice
-    elements = []
+    # Customize styles
+    styles.add(ParagraphStyle(name='CustomTitle', parent=styles['Title'], fontSize=18))
+    styles.add(ParagraphStyle(name='CustomNormal', parent=styles['Normal'], fontSize=12, leading=16))
+    styles.add(ParagraphStyle(name='CustomHeading2', parent=styles['Heading2'], fontSize=14, leading=18))
 
-    # Add title for the invoice
-    elements.append(Paragraph(f'Invoice for Order #{order_id}', styles['Title']))
+    elements = []
     order = order_items.first()  # Assuming all items belong to the same order
     order.created_at = order.created_at.astimezone(local_tz)  # Convert to local timezone
-    created_at_formatted = order.created_at.strftime('%d %B %Y')  # Format as "day Month Year"
-    elements.append(Paragraph(f'Created At: {created_at_formatted}', styles['Normal']))
-    elements.append(Paragraph(f'Customer Name: {order.newname}', styles['Normal']))
-    elements.append(Paragraph(f'Phone: {order.phone}', styles['Normal']))
+    created_at_formatted = order.created_at.strftime('%d %B %Y, %I:%M %p')  # Format as "day Month Year, hh:mm AM/PM"
+    elements.append(Spacer(1, 12))
+
+    # Add logo
+    logo_path = Path('ecomApp/static/assets/images/Frozenwala logo.png')  # Replace with the correct path
+    if logo_path.exists():
+        logo = Image(str(logo_path), width=150, height=150)  # Adjust width and height as needed
+        elements.append(logo)
+    else:
+        elements.append(Paragraph('Logo not found', styles['CustomNormal']))
+
+    elements.append(Spacer(1, 12))  # Spacer after the logo
+
+    # Add title for the invoice
+    elements.append(Paragraph('FROZENWALA ', styles['CustomTitle']))
+    elements.append(Paragraph('ruby tower jogeshwari west, mumbai, Maharashtra - 400102', styles['CustomNormal']))
+    elements.append(Paragraph(f'Order Placed On: {created_at_formatted}', styles['CustomNormal']))
+    elements.append(Paragraph('Phone Number - 8268888826', styles['CustomNormal']))
+    elements.append(Paragraph('GSTN - 27AKFPB3371A1ZS', styles['CustomNormal']))
+
+    # Spacer before logo (adjust as needed)
+
+    # Horizontal line
+    elements.append(HRFlowable(width="100%", thickness=1, color='black'))
+    elements.append(Spacer(1, 12))
+
+    # Order and customer details
+    elements.append(Paragraph(f'Customer Name - {order.newname}', styles['CustomNormal']))
+    elements.append(Paragraph(f'Customer Number - {order.phone}', styles['CustomNormal']))
     elements.append(
-        Paragraph(f'Address: {order.address}, {order.city}, {order.state}, {order.country}, {order.zip_code}',
-                  styles['Normal']))
-    elements.append(Paragraph(f'Delivery Time: {order.delivery_time}', styles['Normal']))
-    elements.append(Paragraph(f'Discounted Price: {order.dicounted_price}', styles['Normal']))
-    elements.append(Paragraph(f'Wallet Discounted Price: {order.walet_value}', styles['Normal']))
+        Paragraph(f'Address - {order.address}, {order.city}, {order.state}, {order.country}, {order.zip_code}',
+                  styles['CustomNormal']))
+    elements.append(Paragraph(f'Order Number - {order.order_id}', styles['CustomNormal']))
+    elements.append(Spacer(1, 12))
 
-    elements.append(Paragraph(f'Previous Price: {order.previous_price}', styles['Normal']))
-    elements.append(Paragraph(f'Delivery Price: {order.delivery_price}', styles['Normal']))
-    elements.append(Paragraph(f'Total Price: {order.total_price}', styles['Normal']))
+    # Horizontal line
+    elements.append(HRFlowable(width="100%", thickness=1, color='black'))
+    elements.append(Spacer(1, 12))
 
-    # Fetch order details (assuming they are stored in the Order model, adjust as needed)
-    # order = Order.objects.get(order_id=order_id)
-    # elements.append(Paragraph(f'Order ID: {order.id}', styles['Normal']))
-    # elements.append(Paragraph(f'Customer: {order.newname}', styles['Normal']))
-    # Add more order details as needed
+    # Table headers
+    data = [['Items', 'Qty.', 'Total(₹)']]
+    elements.append(Spacer(1, 12))
 
-    # Add items table
-    items_data = [[ 'Name', 'Quantity', 'Price', 'Total Price']]
-    for order_item in order_items:
-        items_data.append([ order_item.product_id.title, order_item.quantity, order_item.price,
-                           order_item.total_price])
+    # Table data
+    for item in order_items:
+        item_title = item.product_id.title if item.product_id and item.product_id.title else 'N/A'
+        item_quantity = item.quantity if item.quantity else 0
+        item_total_price = float(item.product_id.item_new_price) if item.product_id.item_new_price else 0.0
+        data.append([item_title, item_quantity, f'{item_total_price:.2f}'])
 
-    items_table = Table(items_data, colWidths=[300, 50, 100, 100, 100])
-    items_table.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                                     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                                     ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                                     ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                                     ('GRID', (0, 0), (-1, -1), 1, colors.black)]))
+    # Create table
+    table = Table(data, colWidths=[300, 50, 100])
+    table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('GRID', (0, 0), (-1, -1), 1, 'black')
+    ]))
+    elements.append(table)
+    elements.append(Spacer(1, 12))
 
-    elements.append(Paragraph('Product Details:', styles['Heading2']))
-    elements.append(items_table)
+    # Horizontal line
+    elements.append(HRFlowable(width="100%", thickness=1, color='black'))
+    elements.append(Spacer(1, 12))
 
-    # Add total amount for the order (you may need to adjust this based on how you calculate total price)
-    # total_amount = sum(order_item.total_price for order_item in order_items)
-    # elements.append(Paragraph(f'Total Amount: ${total_amount}', styles['Heading2']))
+    # Order totals
+    item_total = float(order.previous_price) if order.previous_price else 0.0
+    delivery_price = float(order.delivery_price) if order.delivery_price else 0.0
+    total_price = float(order.total_price) if order.total_price else 0.0
+
+    elements.append(Paragraph(f'Item Total: {item_total:.2f}', styles['CustomNormal']))
+    elements.append(Paragraph(f'Delivery Charge: {delivery_price:.2f}', styles['CustomNormal']))
+
+    if order.couponcode:
+        elements.append(Paragraph(f'Coupon Discount: {order.couponcode}', styles['CustomNormal']))
+    else:
+        elements.append(Paragraph('Applied Coupon: NA', styles['CustomNormal']))
+
+    if order.walet_value:
+        elements.append(Paragraph(f'Wallet Used: {order.walet_value}', styles['CustomNormal']))
+    else:
+        elements.append(Paragraph('Wallet Used: NA', styles['CustomNormal']))
+
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(f'Total Amount: {total_price:.2f}', styles['CustomHeading2']))
+
+    # Horizontal line
+    elements.append(HRFlowable(width="100%", thickness=1, color='black'))
+    elements.append(Spacer(1, 12))
+
+    # Center align elements
+    for element in elements:
+        element.alignment = 1  # 1 means center alignment
 
     # Build PDF
     doc.build(elements)

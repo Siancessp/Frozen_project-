@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Item
-from ecomApp.models  import Catagory, DeliveryCharge
+from ecomApp.models  import Catagory,Stock, DeliveryCharge
 from django.db.models import Q# Create your views here.
 @login_required(login_url='backend/login')
 def item_list(request):
@@ -69,7 +69,19 @@ def add_item(request):
     # If the request method is not POST, render the form
     categories = Catagory.objects.all()
     return render(request, 'backend/add_item.html', {'categories': categories})
+@login_required(login_url='backend/login')
+def veg(request, item_id):
+    item = get_object_or_404(Item, id=item_id)
+    item.veg = '0'
+    item.save()
+    return redirect('item_list')
 
+@login_required(login_url='backend/login')
+def nonveg(request, item_id):
+    item = get_object_or_404(Item, id=item_id)
+    item.veg = '1'
+    item.save()
+    return redirect('item_list')
 @login_required(login_url='backend/login')
 def activate_item(request, item_id):
     item = get_object_or_404(Item, id=item_id)
@@ -205,8 +217,6 @@ class AllProduct(APIView):
         items = [item for item in items if item.status]
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
-
-
 from django.http import Http404
 from rest_framework import status
 
@@ -402,3 +412,18 @@ class ProductsId(APIView):
         serializer = ItemSerializer(item)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class VegItemListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        veg = request.query_params.get('veg')
+        items = Item.objects.filter(veg=veg)
+        serializer = ItemSerializer(items, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class AuthVegItemListAPIView(APIView):
+    def get(self, request):
+        veg = request.query_params.get('veg')
+        items = Item.objects.filter(veg=veg)
+        serializer = ItemSerializer(items, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

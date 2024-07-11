@@ -108,21 +108,44 @@
                   <table class="table m-0">
                     <thead>
                     <tr>
-                      <th>Order ID</th>
-                                              <th>Pick Up</th>
+                        <th>Sl No</th>
+                      <th>View</th>
+                        <TH>Customer Name</TH>
+                        <TH>Phone Number</TH>
+
+
+                        <th>Pick Up</th>
 
                       <th>Price</th>
                       <th>Status</th>
-                      <th>View</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for i in ordform %}
+
                     <tr>
+                        <td>{{forloop.counter}}</td>
 
 
-                        <td>{{i.order_id}}</td>
-                       {% if i.pick_up == "0" %}
+  <td>
+                            <a href="{% url 'orderapp/view_item' i.order_id %}" class="view" title="View" data-toggle="tooltip"><i class="fa fa-eye"></i></a>
+
+                        </td>
+                          </td>
+                        {% if i.newname %}
+                        <td>{{i.newname}}</td>
+                        {% else %}
+                        <td>Frozenwala Customer</td>
+                        {% endif %}
+
+                        {% if i.phone %}
+
+                        <td>{{i.phone}}</td>
+                        {% else %}
+                        <td>NA</td>
+                        {% endif %}
+
+                        {% if i.pick_up == "0" %}
                         <td>No</td>
                         {% else %}
                         <td>Yes</td>
@@ -155,10 +178,7 @@
 </td>
 
 
-                        <td>
-                            <a href="{% url 'orderapp/view_item' i.order_id %}" class="view" title="View" data-toggle="tooltip"><i class="fa fa-eye"></i></a>
 
-                        </td>
                     </tr>
                 {% endfor %}
                     </tbody>

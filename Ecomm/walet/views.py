@@ -256,11 +256,10 @@ def update_installation_benefit(request, benefit_id):
 
     if request.method == "POST":
         edit_item.price = request.POST.get('price')
-        edit_item.status = request.POST.get('status')
         edit_item.save()
         return redirect('installation_benefit_list')
 
-    return render(request, 'backend/edit_installation_benefit.html', {'item': edit_item})
+    return render(request, 'backend/edit_installation_benefit.html', {'sel_proform': edit_item})
 
 
 
@@ -324,11 +323,10 @@ def update_referral_benefit(request, benefit_id):
 
     if request.method == "POST":
         edit_item.price = request.POST.get('price')
-        edit_item.status = request.POST.get('status')
         edit_item.save()
         return redirect('referral_benefit_list')
 
-    return render(request, 'backend/edit_referral_benefit.html', {'item': edit_item})
+    return render(request, 'backend/edit_referral_benefit.html', {'sel_proform': edit_item})
 
 
 class RemoveWallet(APIView):

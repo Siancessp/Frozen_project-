@@ -39,22 +39,18 @@
                 <thead>
                     <tr>
                         <th>Sl No</th>
+
+                        <th>Action</th>
+
                         <th>Customer Name</th>
+                        <th>Phone Number</th>
                         <th>Pick Up</th>
 
                         <th>Ordered At</th>
 
-                        <th>Order Id</th>
-<!--                        <th>Catagory </th>-->
-<!--                        <th>Product Name</th>-->
-<!--                        <th>Product Quantity</th>-->
-                        <th>Payment Id</th>
 
-                        <th>Coupon Code</th>
-<!--                        <th>Amount</th>-->
                         <th>Total Order Amount</th>
                         <th>Status</th>
-                        <th>Action</th>
 
                     </tr>
                 </thead>
@@ -62,8 +58,23 @@
                 {% for i in new %}
                     <tr>
                         <td>{{forloop.counter}}</td>
+                            <td>
+                            <a href="{% url 'orderapp/view_item' i.order_id %}" class="view" title="View" data-toggle="tooltip"><i style="color: #ff9900;" class="fa fa-eye"></i></a>
+
+                        </td>
+
+ {% if i.newname %}
                         <td>{{i.newname}}</td>
-                        {% if i.pick_up == "0" %}
+                        {% else %}
+                        <td>Frozenwala Customer</td>
+                        {% endif %}
+
+                        {% if i.phone %}
+
+                        <td>{{i.phone}}</td>
+                        {% else %}
+                        <td>NA</td>
+                        {% endif %}                        {% if i.pick_up == "0" %}
                         <td>No</td>
                         {% else %}
                         <td>Yes</td>
@@ -71,13 +82,7 @@
 
                         <td>{{i.created_at}}</td>
 
-                        <td>{{i.order_id}}</td>
-<!--                        <td>{{i.product_id.category}}</td>-->
-<!--                        <td>{{i.product_id.title}}</td>-->
-<!--                        <td>{{i.quantity}}{{i.product_id.item_measurement}}</td>-->
-                        <td>{% if i.payment_id %}{{i.payment_id}}{% else %} Not Payment Yet{% endif %}</td>
-                        <td>{{i.couponcode}}</td>
-<!--                        <td>{{i.price}}</td>-->
+
                         <td>{{i.total_price}}</td>
 
 
@@ -100,10 +105,7 @@
 </td>
 
 
-                        <td>
-                            <a href="{% url 'orderapp/view_item' i.order_id %}" class="view" title="View" data-toggle="tooltip"><i style="color: #ff9900;" class="fa fa-eye"></i></a>
 
-                        </td>
                     </tr>
                 {% endfor %}
 

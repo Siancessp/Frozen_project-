@@ -123,9 +123,6 @@ class DeliveryCharge(models.Model):
     id = models.AutoField(primary_key=True)
     charge =  models.IntegerField()
     status= models.BooleanField(default=True)
-
-
-
 from menu_management.models import Item
 class Stock(models.Model):
     id = models.BigAutoField(primary_key=True)

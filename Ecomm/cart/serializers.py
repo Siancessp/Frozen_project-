@@ -25,6 +25,7 @@ class CartGetSerializer(serializers.ModelSerializer):
 
     def get_price(self, obj):
         return "{:.2f}".format(obj.price)
+
     class Meta:
         model = Cart
         fields = ['id', 'product_id', 'u_id', 'quantity', 'price', 'product_name', 'product_image']

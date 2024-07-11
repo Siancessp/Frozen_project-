@@ -6,6 +6,8 @@ urlpatterns = [
     path('backend/items/', item_list, name='item_list'),
     path('backend/item/add/', add_item, name='add_item'),
     path('backend/item/activate/<int:item_id>/', activate_item, name='activate_item'),
+    path('backend/item/nonveg/<int:item_id>/', nonveg, name='nonveg'),
+    path('backend/item/veg/<int:item_id>/', veg, name='veg'),
     path('backend/item/deactivate/<int:item_id>/', deactivate_item, name='deactivate_item'),
     path('backend/item/delete/<int:item_id>/', delete_item, name='delete_item'),
     path('backend/item/view/<int:item_id>/', view_item, name='view_item'),
@@ -36,7 +38,10 @@ urlpatterns = [
     path('api/auth/most-popular/', AuthMostPopularAPIView.as_view(), name=''),
     path('api/auth/category/product-all/', AuthCategoryAPIView.as_view(), name=''),
     path('api/auth/product-all/', AuthAllProduct.as_view(), name=''),
-    path('api/item/', ProductsId.as_view(), name='')
+    path('api/item/', ProductsId.as_view(), name=''),
+    path('api/veg-items/', VegItemListAPIView.as_view(), name='veg-items'),
+    path('api/auth/veg-items/', AuthVegItemListAPIView.as_view(), name='veg-items'),
+
 ]
 
 
