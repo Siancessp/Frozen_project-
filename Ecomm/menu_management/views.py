@@ -427,3 +427,14 @@ class AuthVegItemListAPIView(APIView):
         items = Item.objects.filter(veg=veg)
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ItemSearchAPIView(APIView):
+    def get(self, request):
+        query = request.query_params.get('q', None)
+        if query is not None:
+            items = Item.objects.filter(title__icontains=query)
+            serializer = ItemSerializer(items, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Please provide a search query"}, status=status.HTTP_400_BAD_REQUEST)

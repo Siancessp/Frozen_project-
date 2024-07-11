@@ -33,7 +33,7 @@ urlpatterns = [
     path('api/recommended_five/', RecommendedfiveAPIView.as_view(), name='recommended_five'),
     path('api/most_popular_five/', MostPopularfiveAPIView.as_view(), name='most_popular_five'),
     path('api/all_five_product/', AllfiveProduct.as_view(), name='all_five_product'),
-
+    path('search/', ItemSearchAPIView.as_view(), name='search_items'),
     path('api/auth/categories/', AuthCategoryFetch.as_view(), name=''),
     path('api/auth/most-popular/', AuthMostPopularAPIView.as_view(), name=''),
     path('api/auth/category/product-all/', AuthCategoryAPIView.as_view(), name=''),
