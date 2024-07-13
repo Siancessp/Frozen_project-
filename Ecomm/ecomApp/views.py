@@ -736,3 +736,4 @@ class CouponList(generics.ListAPIView):
     def get_queryset(self):
         today = date.today()
         return CustomerCoupon.objects.filter(start_date__lte=today, expire_date__gte=today)
+
