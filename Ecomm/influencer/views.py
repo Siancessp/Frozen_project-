@@ -115,3 +115,85 @@ def deactivate_influencer(request, influencer_id):
     influencer.status = False
     influencer.save()
     return redirect('influencer_list')
+
+
+from django.contrib.auth.backends import BaseBackend
+from django.contrib.auth.hashers import check_password
+from .models import Influencer
+
+class InfluencerBackend(BaseBackend):
+    def authenticate(self, request, phone=None, password=None, **kwargs):
+        try:
+            influencer = Influencer.objects.get(phone=phone)
+            if password == influencer.password:
+                return influencer
+        except Influencer.DoesNotExist:
+            return None
+
+    def get_user(self, user_id):
+        try:
+            return Influencer.objects.get(pk=user_id)
+        except Influencer.DoesNotExist:
+            return None
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+
+def influencer_login(request):
+    if request.method == 'POST':
+        phone = request.POST['phone']
+        password = request.POST['password']
+        user = authenticate(request, phone=phone, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('influencer_dashboard')  # Replace 'dashboard' with your desired redirect URL
+        else:
+            messages.error(request, 'Invalid phone number or password')
+    return render(request, 'backend/influencer_login.html',{'error': 'Invalid login credentials'})
+
+
+@login_required(login_url='influencer/login')
+def influencer_dashboard(request):
+
+    return render(request, 'backend/influencer_dashboard.html')
+
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.urls import reverse
+
+def influlogout_view(request):
+    if request.user.is_authenticated:
+        request.session['logged_out'] = True  # Set session variable to indicate logout
+        logout(request)
+    return redirect('influencer/login')
+
+
+
+def change_influencer_password(request):
+    if request.method == 'POST':
+        email = request.session.get('verified_email')
+        if not email:
+            # If email is not found in session, redirect to the verify_email page
+            messages.error(request, 'Please verify your email first.')
+            return redirect('change_password')
+
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if new_password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return render(request, 'backend/change_password.html')
+
+        user = Influencer.objects.filter(email=email).first()
+        if user:
+            user.set_password(new_password)
+            user.save()
+            update_session_auth_hash(request, user)  # Keep the user logged in after password change
+            messages.success(request, "Password changed successfully.")
+            return redirect('backend/login')
+        else:
+            messages.error(request, "User not found.")
+            return redirect('verify_email')
+    return render(request, 'backend/change_password.html')

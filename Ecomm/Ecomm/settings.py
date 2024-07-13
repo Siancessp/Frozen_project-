@@ -78,6 +78,12 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'influencer.views.InfluencerBackend',  # Replace 'myapp' with your app name
+]
+
+
 ROOT_URLCONF = 'Ecomm.urls'
 CORS_ORIGIN_ALLOW_ALL = True
 
