@@ -142,7 +142,7 @@
 
                         <td>{{i.phone}}</td>
                         {% else %}
-                        <td>NA</td>
+                        <td>{{i.user_id.phone_number}}</td>
                         {% endif %}
 
                         {% if i.pick_up == "0" %}
