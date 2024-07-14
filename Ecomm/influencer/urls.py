@@ -13,4 +13,10 @@ urlpatterns = [
     path('backend/influencer/login/', influencer_login, name='influencer/login'),
     path('backend/influencer/dashboard/', influencer_dashboard, name='influencer_dashboard'),
     path('backend/influencer/logout/', influlogout_view, name='influencer/logout'),
+
+    path('backend/influencer/verify-email/', influencer_verify_phone, name='influencer/verify_email'),
+    path('backend/influencer/verify-otp/', influencer_verify_otp, name='influencer/verify_otp'),
+    path('backend/influencer/change-password/', influencer_change_password, name='influencer/change_password'),
+
+
 ]

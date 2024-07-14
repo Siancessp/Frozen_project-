@@ -28,6 +28,7 @@ class Influencer(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=128)
     address = models.TextField()
     type = models.CharField(max_length=10)
+    otp = models.CharField(max_length=10,null=True)
     commission = models.DecimalField(max_digits=10, decimal_places=2)
     code = models.CharField(max_length=50, unique=True)
     status = models.BooleanField(default=True)
