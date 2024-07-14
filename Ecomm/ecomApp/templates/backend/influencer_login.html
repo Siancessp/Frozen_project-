@@ -96,7 +96,7 @@
      {% if error %}
         <p style="color: red;">{{ error }}</p>
     {% endif %}
-     <form class="login-form" method="post" >
+     <form class="login-form" method="post" action="{% url 'influencer/login' %}">
         {% csrf_token %}
         <div class="form-group">
             <label style="text-align: left;font-weight:bold;" for="username">Phone Number:</label>

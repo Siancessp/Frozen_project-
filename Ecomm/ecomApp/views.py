@@ -24,7 +24,12 @@ from django.shortcuts import render
 
 @login_required(login_url='backend/login')
 def dashboard(request):
+    if 'logged_in_influencer' in request.session:
+        del request.session['logged_in_influencer']
+    if 'influencer_phone' in request.session:
+        del request.session['influencer_phone']
     if request.method == 'GET':
+
         order_type = request.GET.get('order_type', None)
         from_date = request.GET.get('from_date', None)
         to_date = request.GET.get('to_date', None)

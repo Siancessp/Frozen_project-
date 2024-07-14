@@ -80,7 +80,8 @@ MIDDLEWARE = [
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'influencer.views.InfluencerBackend',  # Replace 'myapp' with your app name
+    'influencer.views.InfluencerBackend',
+    'backendlogin.views.CustomUserBackend',# Replace 'myapp' with your app name
 ]
 
 
@@ -105,22 +106,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Ecomm.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'frozenwaladb',
-        'USER': 'frozenusr',
-        'PASSWORD': 'frozenwala@123!',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
-}
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'frozenwaladb',
+#         'USER': 'frozenusr',
+#         'PASSWORD': 'frozenwala@123!',
+#         'HOST': 'localhost',
+#         'PORT': '3306',
 #     }
 # }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',

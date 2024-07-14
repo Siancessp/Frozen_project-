@@ -139,18 +139,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-
-def influencer_login(request):
-    if request.method == 'POST':
-        phone = request.POST['phone']
-        password = request.POST['password']
-        user = authenticate(request, phone=phone, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('influencer_dashboard')  # Replace 'dashboard' with your desired redirect URL
-        else:
-            messages.error(request, 'Invalid phone number or password')
-    return render(request, 'backend/influencer_login.html',{'error': 'Invalid login credentials'})
+from django.contrib.auth import login, authenticate, logout
+# from ecomApp.models import CustomUser
+from django.conf import settings
 
 
 @login_required(login_url='influencer/login')
@@ -162,9 +153,21 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+def influencer_login(request):
+    if request.method == 'POST':
+        phone = request.POST['phone']
+        password = request.POST['password']
+        user = authenticate(request, phone=phone, password=password,is_staff=False,is_influencer=True)
+        if user is not None and not user.is_staff and user.is_influencer:
+            login(request, user)
+            return redirect('influencer_dashboard')  # Replace 'dashboard' with your desired redirect URL
+        else:
+            messages.error(request, 'Invalid phone number or password')
+    return render(request, 'backend/influencer_login.html',{'error': 'Invalid login credentials'})
+
 
 def influlogout_view(request):
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and not request.user.is_staff and request.user.is_influencer:
         request.session['logged_out'] = True  # Set session variable to indicate logout
         logout(request)
     return redirect('influencer/login')

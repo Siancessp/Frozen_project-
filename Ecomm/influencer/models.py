@@ -31,6 +31,7 @@ class Influencer(AbstractBaseUser, PermissionsMixin):
     commission = models.DecimalField(max_digits=10, decimal_places=2)
     code = models.CharField(max_length=50, unique=True)
     status = models.BooleanField(default=True)
+    is_influencer = models.BooleanField(default=True)
 
     # Required fields for AbstractBaseUser
     last_login = models.DateTimeField(default=timezone.now)
@@ -39,7 +40,7 @@ class Influencer(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'phone'
     EMAIL_FIELD = 'email'
-    REQUIRED_FIELDS = ['email', 'name']
+    REQUIRED_FIELDS = ['phone']
 
     def __str__(self):
         return self.name
@@ -54,9 +55,9 @@ class Influencer(AbstractBaseUser, PermissionsMixin):
     def is_staff(self):
         return self.is_superuser
 
-    @property
-    def is_superuser(self):
-        return self.status and self.is_staff
+    # @property
+    # def is_superuser(self):
+    #     return self.status and self.is_staff
 
     @property
     def is_active(self):

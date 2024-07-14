@@ -29,7 +29,7 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     id= models.AutoField(primary_key=True)
     otp_value = models.CharField(max_length=6, blank=True)
-
+    is_influencer = models.BooleanField(default=False)
     phone_number = models.CharField(max_length=15, unique=True)  # You can adjust the max_length as needed.
     name = models.CharField(max_length=255,null=True)
     registration_id = models.CharField(max_length=255,null=True)
