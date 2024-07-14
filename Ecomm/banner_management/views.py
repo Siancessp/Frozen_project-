@@ -6,6 +6,8 @@ from ecomApp.models  import Catagory
 # Create your views here.
 @login_required(login_url='backend/login')
 def banner_list(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     items = Banner.objects.all()
     context = {
         'items': items
@@ -14,6 +16,8 @@ def banner_list(request):
 
 @login_required(login_url='backend/login')
 def add_banner(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     if request.method == "POST":
         title=request.POST.get('title')
         description=request.POST.get('description')
@@ -39,6 +43,8 @@ def add_banner(request):
 
 @login_required(login_url='backend/login')
 def activate_add(request, add_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(Banner, id=add_id)
     item.status = True
     item.save()
@@ -46,6 +52,8 @@ def activate_add(request, add_id):
 
 @login_required(login_url='backend/login')
 def deactivate_add(request, add_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(Banner, id=add_id)
     item.status = False
     item.save()
@@ -53,17 +61,23 @@ def deactivate_add(request, add_id):
 
 @login_required(login_url='backend/login')
 def delete_add(request, add_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(Banner, id=add_id)
     item.delete()
     return redirect('banner_list')
 
 @login_required(login_url='backend/login')
 def view_add(request, add_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(Banner, id=add_id)
     return render(request, 'backend/view_banner.html', {'item': item})
 
 @login_required(login_url='backend/login')
 def update_add(request, add_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     edit_item = get_object_or_404(Banner, id=add_id)
 
     try:
@@ -84,6 +98,8 @@ def update_add(request, add_id):
 
 @login_required(login_url='backend/login')
 def edit_add(request, add_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     sel_item = get_object_or_404(Banner, id=add_id)
     all_items = Banner.objects.all()
     categories = Catagory.objects.all()

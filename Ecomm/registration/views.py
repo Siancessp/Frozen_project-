@@ -614,6 +614,8 @@ from django.contrib.auth.decorators import login_required
 from .models import AddressAdmin
 @login_required(login_url='backend/login')
 def address_list(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     items = AddressAdmin.objects.all()
     context = {
         'items': items
@@ -621,6 +623,8 @@ def address_list(request):
     return render(request, 'backend/address_list.html', context)
 @login_required(login_url='backend/login')
 def add_address(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     if request.method == "POST":
         newname = request.POST.get('newname')
         phone = request.POST.get('phone')
@@ -647,27 +651,37 @@ def add_address(request):
     return render(request, 'backend/add_address.html')
 @login_required(login_url='backend/login')
 def activate_address(request, address_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(AddressAdmin, id=address_id)
     item.status = '1'
     item.save()
     return redirect('back/address_list')
 @login_required(login_url='backend/login')
 def deactivate_address(request, address_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(AddressAdmin, id=address_id)
     item.status = '0'
     item.save()
     return redirect('back/address_list')
 @login_required(login_url='backend/login')
 def delete_address(request, address_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(AddressAdmin, id=address_id)
     item.delete()
     return redirect('back/address_list')
 @login_required(login_url='backend/login')
 def view_address(request, address_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(AddressAdmin, id=address_id)
     return render(request, 'backend/view_address.html', {'item': item})
 @login_required(login_url='backend/login')
 def update_address(request, address_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     edit_item = get_object_or_404(AddressAdmin, id=address_id)
 
     if request.method == "POST":
@@ -684,6 +698,8 @@ def update_address(request, address_id):
     return render(request, 'backend/edit_address.html', {'item': edit_item})
 @login_required(login_url='backend/login')
 def edit_address(request, address_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     sel_item = get_object_or_404(AddressAdmin, id=address_id)
     all_items = AddressAdmin.objects.all()
 

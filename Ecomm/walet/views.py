@@ -125,6 +125,8 @@ from .models import PurchaseBenefit
 
 @login_required(login_url='backend/login')
 def purchase_benefit_list(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     benefits = PurchaseBenefit.objects.all()
     context = {
         'benefits': benefits
@@ -133,6 +135,8 @@ def purchase_benefit_list(request):
 
 @login_required(login_url='backend/login')
 def add_purchase_benefit(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     if request.method == "POST":
         price = request.POST.get('price')
         benefit_percentage = request.POST.get('benefit_percentage')
@@ -150,6 +154,8 @@ def add_purchase_benefit(request):
 
 @login_required(login_url='backend/login')
 def activate_purchase_benefit(request, benefit_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     benefit = get_object_or_404(PurchaseBenefit, id=benefit_id)
     benefit.status = '1'
     benefit.save()
@@ -157,6 +163,8 @@ def activate_purchase_benefit(request, benefit_id):
 
 @login_required(login_url='backend/login')
 def deactivate_purchase_benefit(request, benefit_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     benefit = get_object_or_404(PurchaseBenefit, id=benefit_id)
     benefit.status = '0'
     benefit.save()
@@ -164,17 +172,23 @@ def deactivate_purchase_benefit(request, benefit_id):
 
 @login_required(login_url='backend/login')
 def delete_purchase_benefit(request, benefit_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     benefit = get_object_or_404(PurchaseBenefit, id=benefit_id)
     benefit.delete()
     return redirect('purchase_benefit_list')
 
 @login_required(login_url='backend/login')
 def view_purchase_benefit(request, benefit_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     benefit = get_object_or_404(PurchaseBenefit, id=benefit_id)
     return render(request, 'backend/view_purchase_benefit.html', {'item': benefit})
 
 @login_required(login_url='backend/login')
 def update_purchase_benefit(request, benefit_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     benefit = get_object_or_404(PurchaseBenefit, id=benefit_id)
 
     if request.method == "POST":
@@ -188,6 +202,8 @@ def update_purchase_benefit(request, benefit_id):
 
 @login_required(login_url='backend/login')
 def edit_purchase_benefit(request, benefit_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     benefit = get_object_or_404(PurchaseBenefit, id=benefit_id)
     all_benefits = PurchaseBenefit.objects.all()
 
@@ -205,6 +221,8 @@ from .models import InstallationBenefit
 
 @login_required(login_url='backend/login')
 def installation_benefit_list(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     items = InstallationBenefit.objects.all()
     context = {
         'items': items
@@ -213,6 +231,8 @@ def installation_benefit_list(request):
 
 @login_required(login_url='backend/login')
 def add_installation_benefit(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     if request.method == "POST":
         price = request.POST.get('price')
         status = '1'
@@ -227,6 +247,8 @@ def add_installation_benefit(request):
 
 @login_required(login_url='backend/login')
 def activate_installation_benefit(request, benefit_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(InstallationBenefit, id=benefit_id)
     item.status = '1'
     item.save()
@@ -234,6 +256,8 @@ def activate_installation_benefit(request, benefit_id):
 
 @login_required(login_url='backend/login')
 def deactivate_installation_benefit(request, benefit_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(InstallationBenefit, id=benefit_id)
     item.status = '0'
     item.save()
@@ -241,17 +265,23 @@ def deactivate_installation_benefit(request, benefit_id):
 
 @login_required(login_url='backend/login')
 def delete_installation_benefit(request, benefit_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(InstallationBenefit, id=benefit_id)
     item.delete()
     return redirect('installation_benefit_list')
 
 @login_required(login_url='backend/login')
 def view_installation_benefit(request, benefit_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(InstallationBenefit, id=benefit_id)
     return render(request, 'backend/view_installation_benefit.html', {'item': item})
 
 @login_required(login_url='backend/login')
 def update_installation_benefit(request, benefit_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     edit_item = get_object_or_404(InstallationBenefit, id=benefit_id)
 
     if request.method == "POST":
@@ -272,6 +302,8 @@ from .models import ReferralBenefit
 
 @login_required(login_url='backend/login')
 def referral_benefit_list(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     items = ReferralBenefit.objects.all()
     context = {
         'items': items
@@ -280,6 +312,8 @@ def referral_benefit_list(request):
 
 @login_required(login_url='backend/login')
 def add_referral_benefit(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     if request.method == "POST":
         price = request.POST.get('price')
         status = '1'
@@ -294,6 +328,8 @@ def add_referral_benefit(request):
 
 @login_required(login_url='backend/login')
 def activate_referral_benefit(request, benefit_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(ReferralBenefit, id=benefit_id)
     item.status = '1'
     item.save()
@@ -301,6 +337,8 @@ def activate_referral_benefit(request, benefit_id):
 
 @login_required(login_url='backend/login')
 def deactivate_referral_benefit(request, benefit_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(ReferralBenefit, id=benefit_id)
     item.status = '0'
     item.save()
@@ -308,17 +346,23 @@ def deactivate_referral_benefit(request, benefit_id):
 
 @login_required(login_url='backend/login')
 def delete_referral_benefit(request, benefit_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(ReferralBenefit, id=benefit_id)
     item.delete()
     return redirect('referral_benefit_list')
 
 @login_required(login_url='backend/login')
 def view_referral_benefit(request, benefit_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(ReferralBenefit, id=benefit_id)
     return render(request, 'backend/view_referral_benefit.html', {'item': item})
 
 @login_required(login_url='backend/login')
 def update_referral_benefit(request, benefit_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     edit_item = get_object_or_404(ReferralBenefit, id=benefit_id)
 
     if request.method == "POST":

@@ -146,7 +146,8 @@ from django.conf import settings
 
 @login_required(login_url='influencer/login')
 def influencer_dashboard(request):
-
+    if not request.user.is_influencer :
+        return redirect('influencer/login')
     return render(request, 'backend/influencer_dashboard.html')
 
 from django.shortcuts import render, redirect

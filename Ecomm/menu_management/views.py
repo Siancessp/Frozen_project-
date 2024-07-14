@@ -6,6 +6,8 @@ from ecomApp.models  import Catagory,Stock, DeliveryCharge
 from django.db.models import Q# Create your views here.
 @login_required(login_url='backend/login')
 def item_list(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     items = Item.objects.all() .order_by('-created_at')
 
     context = {
@@ -15,6 +17,8 @@ def item_list(request):
 
 @login_required(login_url='backend/login')
 def add_item(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     if request.method == "POST":
         title=request.POST.get('title')
         # weight_units=request.POST.get('weight_units')
@@ -71,6 +75,8 @@ def add_item(request):
     return render(request, 'backend/add_item.html', {'categories': categories})
 @login_required(login_url='backend/login')
 def veg(request, item_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(Item, id=item_id)
     item.veg = '0'
     item.save()
@@ -78,12 +84,16 @@ def veg(request, item_id):
 
 @login_required(login_url='backend/login')
 def nonveg(request, item_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(Item, id=item_id)
     item.veg = '1'
     item.save()
     return redirect('item_list')
 @login_required(login_url='backend/login')
 def activate_item(request, item_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(Item, id=item_id)
     item.status = True
     item.save()
@@ -91,6 +101,8 @@ def activate_item(request, item_id):
 
 @login_required(login_url='backend/login')
 def deactivate_item(request, item_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(Item, id=item_id)
     item.status = False
     item.save()
@@ -98,17 +110,23 @@ def deactivate_item(request, item_id):
 
 @login_required(login_url='backend/login')
 def delete_item(request, item_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(Item, id=item_id)
     item.delete()
     return redirect('item_list')
 
 @login_required(login_url='backend/login')
 def view_item(request, item_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     item = get_object_or_404(Item, id=item_id)
     return render(request, 'backend/view_item.html', {'item': item})
 
 @login_required(login_url='backend/login')
 def deal_of_the_day(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     items = Item.objects.all()
     items = [item for item in items if item.deal_of_the_day]
     context = {
@@ -117,6 +135,8 @@ def deal_of_the_day(request):
     return render(request, 'backend/deal_of_the_day.html', context)
 @login_required(login_url='backend/login')
 def recommended(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     items = Item.objects.all()
     items = [item for item in items if item.recommended]
     context = {
@@ -126,6 +146,8 @@ def recommended(request):
 
 @login_required(login_url='backend/login')
 def most_popular(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     items = Item.objects.all()
     items = [item for item in items if item.most_popular]
     context = {
@@ -135,6 +157,8 @@ def most_popular(request):
 
 @login_required(login_url='backend/login')
 def update_item(request, item_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     edit_item = get_object_or_404(Item, id=item_id)
 
     try:
@@ -166,6 +190,8 @@ def update_item(request, item_id):
 
 @login_required(login_url='backend/login')
 def edit_item(request, item_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     sel_item = get_object_or_404(Item, id=item_id)
     all_items = Item.objects.all()
     categories = Catagory.objects.all()

@@ -24,6 +24,8 @@ from django.shortcuts import render
 
 @login_required(login_url='backend/login')
 def dashboard(request):
+    if not request.user.is_staff :
+        return redirect('backend/login')
     if 'logged_in_influencer' in request.session:
         del request.session['logged_in_influencer']
     if 'influencer_phone' in request.session:
@@ -174,6 +176,8 @@ def dashboard(request):
     
 @login_required(login_url='backend/login')
 def charts(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     return render(request,"backend/charts.html")
 
 from django.contrib.auth import get_user_model  # Import get_user_model
@@ -309,6 +313,8 @@ from django.shortcuts import render
 
 @login_required(login_url='backend/login')
 def catagory(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     catagoryapp=Catagory.objects.all().order_by('-id')
 
     context={
@@ -318,6 +324,8 @@ def catagory(request):
     return render(request,'backend/catagory.html',context)
 @login_required(login_url='backend/login')
 def catgoryadd(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     if request.method == "POST":
         contact = Catagory()
         name = request.POST.get('name')
@@ -329,11 +337,15 @@ def catgoryadd(request):
     return render(request, 'backend/catgoryadd.html')
 @login_required(login_url='backend/login')
 def delete_item(request, myid):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     catagoryapp=Catagory.objects.get(id=myid)
     catagoryapp.delete()
     return redirect('catagoryapp')
 @login_required(login_url='backend/login')
 def edit_item(request, myid):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     sel_catform=Catagory.objects.get(id=myid)
     cat = Catagory.objects.all()
     context = {
@@ -344,6 +356,8 @@ def edit_item(request, myid):
     return render(request,'backend/catagoryedit.html',context)
 @login_required(login_url='backend/login')
 def update_item(request, myid):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     catagoryapp=Catagory.objects.get(id=myid)
 
     catagoryapp.name = request.POST.get('name')
@@ -354,6 +368,8 @@ def update_item(request, myid):
     return redirect('catagoryapp')
 @login_required(login_url='backend/login')
 def view_item(request, myid):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     sel_catform = Catagory.objects.get(id=myid)
     cat = Catagory.objects.all()
     context = {
@@ -364,12 +380,16 @@ def view_item(request, myid):
     return render(request, 'backend/catagoryview.html', context)
 @login_required(login_url='backend/login')
 def activate_catagory(request, catagory_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     banner = get_object_or_404(Catagory, id=catagory_id)
     banner.status = True
     banner.save()
     return redirect('catagoryapp')  # Redirect to your banner list view
 @login_required(login_url='backend/login')
 def deactivate_catagory(request, catagory_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     banner = get_object_or_404(Catagory, id=catagory_id)
     banner.status = False
     banner.save()
@@ -377,6 +397,8 @@ def deactivate_catagory(request, catagory_id):
 # Create your views here.
 @login_required(login_url='backend/login')
 def customerlist(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     productapp=CustomUser.objects.all()
 
     context={
@@ -385,12 +407,16 @@ def customerlist(request):
     return render(request,'backend/customerlist.html',context)
 @login_required(login_url='backend/login')
 def activate_customer(request, id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     banner = get_object_or_404(CustomUser, id=id)
     banner.status = True
     banner.save()
     return redirect('customerlist')  # Redirect to your banner list view
 @login_required(login_url='backend/login')
 def deactivate_customer(request, id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     banner = get_object_or_404(CustomUser, id=id)
     banner.status = False
     banner.save()
@@ -398,6 +424,8 @@ def deactivate_customer(request, id):
 
 @login_required(login_url='backend/login')
 def product(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     productapp=Product.objects.all()
 
     context={
@@ -406,6 +434,8 @@ def product(request):
     return render(request,'backend/product.html',context)
 @login_required(login_url='backend/login')
 def productadd(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     if request.method == "POST":
         product = Product()
         stock = Stock()
@@ -440,11 +470,15 @@ def productadd(request):
     return render(request, 'backend/productadd.html',{'categories': categories})
 @login_required(login_url='backend/login')
 def delete_product(request, myid):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     productapp=Product.objects.get(id=myid)
     productapp.delete()
     return redirect('productapp')
 @login_required(login_url='backend/login')
 def edit_product(request, myid):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     sel_proform=Product.objects.get(id=myid)
     pro = Product.objects.all()
     # categories = Catagory.objects.filter(status=True)
@@ -459,6 +493,8 @@ def edit_product(request, myid):
     return render(request,'backend/productedit.html',context)
 @login_required(login_url='backend/login')
 def update_product(request, myid):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     productapp=Product.objects.get(id=myid)
 
     productapp.name = request.POST.get('name')
@@ -476,6 +512,8 @@ def update_product(request, myid):
     return redirect('productapp')
 @login_required(login_url='backend/login')
 def view_product(request, myid):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     sel_proform = Product.objects.get(id=myid)
     pro = Product.objects.all()
     context = {
@@ -486,12 +524,16 @@ def view_product(request, myid):
     return render(request, 'backend/productview.html', context)
 @login_required(login_url='backend/login')
 def activate_product(request, product_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     banner = get_object_or_404(Product, id=product_id)
     banner.status = True
     banner.save()
     return redirect('productapp')  # Redirect to your banner list view
 @login_required(login_url='backend/login')
 def deactivate_product(request, product_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     banner = get_object_or_404(Product, id=product_id)
     banner.status = False
     banner.save()
@@ -500,6 +542,8 @@ def deactivate_product(request, product_id):
 from .models import CustomerCoupon
 @login_required(login_url='backend/login')
 def add_customer_coupon(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     if request.method == 'POST':
         customer_name = request.POST.get('customerName')
         occasion_name = request.POST.get('occasionName')
@@ -529,23 +573,31 @@ def add_customer_coupon(request):
     return render(request, 'backend/add_customer_coupon.html')
 @login_required(login_url='backend/login')
 def customer_couponlist(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     coupons = CustomerCoupon.objects.all()
     return render(request, 'backend/customercouponlist.html', {'coupons': coupons})
 from django.shortcuts import get_object_or_404
 @login_required(login_url='backend/login')
 def delete_coupon(request, coupon_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     coupon = get_object_or_404(CustomerCoupon, pk=coupon_id)
     coupon.delete()
     # Optionally, add a success message or redirect to a different page
     return redirect('customer_couponlist')
 @login_required(login_url='backend/login')
 def activate_coupon(request, coupon_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     banner = get_object_or_404(CustomerCoupon, id=coupon_id)
     banner.status = True
     banner.save()
     return redirect('customer_couponlist')  # Redirect to your banner list view
 @login_required(login_url='backend/login')
 def deactivate_coupon(request, coupon_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     banner = get_object_or_404(CustomerCoupon, id=coupon_id)
     banner.status = False
     banner.save()
@@ -561,6 +613,8 @@ def deactivate_coupon(request, coupon_id):
 from .models import DeliveryCharge
 @login_required(login_url='backend/login')
 def charge(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     productapp=DeliveryCharge.objects.all()
 
     context={
@@ -569,6 +623,8 @@ def charge(request):
     return render(request,'backend/chargelist.html',context)
 @login_required(login_url='backend/login')
 def chargeadd(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     if request.method == "POST":
         product = DeliveryCharge()
         charge = request.POST.get('charge')
@@ -582,11 +638,15 @@ def chargeadd(request):
     return render(request, 'backend/add_charge.html')
 @login_required(login_url='backend/login')
 def delete_charge(request, myid):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     productapp=DeliveryCharge.objects.get(id=myid)
     productapp.delete()
     return redirect('chargeapp')
 @login_required(login_url='backend/login')
 def edit_charge(request, myid):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     sel_proform=DeliveryCharge.objects.get(id=myid)
     pro = DeliveryCharge.objects.all()
     # categories = Catagory.objects.filter(status=True)
@@ -599,6 +659,8 @@ def edit_charge(request, myid):
     return render(request,'backend/edit_charge.html',context)
 @login_required(login_url='backend/login')
 def update_charge(request, myid):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     productapp=DeliveryCharge.objects.get(id=myid)
 
     productapp.charge = request.POST.get('charge')
@@ -608,6 +670,8 @@ def update_charge(request, myid):
     return redirect('chargeapp')
 @login_required(login_url='backend/login')
 def stock(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     catagoryapp=Stock.objects.all()
 
     context={
@@ -618,6 +682,8 @@ def stock(request):
     return render(request,'backend/inventory_list.html',context)
 @login_required(login_url='backend/login')
 def edit_stock(request, myid):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     sel_proform=Stock.objects.get(id=myid)
     pro = Stock.objects.all()
     # categories = Catagory.objects.filter(status=True)
@@ -630,6 +696,8 @@ def edit_stock(request, myid):
     return render(request,'backend/edit_inventory.html',context)
 @login_required(login_url='backend/login')
 def update_stock(request,stock_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     if request.method == 'POST':
         openingstock = request.POST.get('openingstock')
 
@@ -647,6 +715,8 @@ def update_stock(request,stock_id):
     return redirect('stock')
 @login_required(login_url='backend/login')
 def update_all_stock(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     if request.method == 'POST':
 
         for key, value in request.POST.items():
@@ -662,6 +732,10 @@ def update_all_stock(request):
     return redirect('stock')
 @login_required(login_url='backend/login')
 def allstock(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
+    if not request.user.is_staff:
+        return redirect('backend/login')
     catagoryapp=Stock.objects.all()
 
     context={

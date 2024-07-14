@@ -21,12 +21,16 @@ from django.db.models import Max, Subquery, OuterRef
 
 @login_required(login_url='backend/login')
 def render_product_dropdown(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     products = Item.objects.all()
     return render(request, 'backend/itemwisechart.html', {'products': products})
 
 
 @login_required(login_url='backend/login')
 def daywise_chart(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     if request.method == 'GET':
         order_type = request.GET.get('order_type', None)
         from_date = request.GET.get('from_date', None)
@@ -82,6 +86,8 @@ def daywise_chart(request):
     return render(request, 'backend/daywise_chart.html', {})
 @login_required(login_url='backend/login')
 def itemwise_chart(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     if request.method == 'GET':
         from_date = request.GET.get('from_date', None)
         to_date = request.GET.get('to_date', None)
@@ -122,6 +128,8 @@ from datetime import date
 
 @login_required(login_url='backend/login')
 def daily_chart(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     today = date.today()
 
     orders = Order.objects.filter(created_at__date=today).order_by('-created_at')
@@ -147,6 +155,8 @@ from menu_management.models import Item  # Import the Item model
 
 @login_required(login_url='backend/login')
 def category_wise_sales_chart(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     # Filter orders to get only orders with payment IDs
     orders = Order.objects.filter(payment_id__isnull=False)
 
@@ -180,6 +190,8 @@ def category_wise_sales_chart(request):
     return render(request, 'backend/category_wise_sales_chart.html', context)
 @login_required(login_url='backend/login')
 def profit_chart(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     if request.method == 'GET':
         order_type = request.GET.get('order_type', None)
         from_date = request.GET.get('from_date', None)

@@ -35,6 +35,8 @@ from django.utils import timezone
 
 @login_required(login_url='backend/login')
 def orderlist(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     # Fetch all orders
     orders = Order.objects.all().order_by('-created_at')
 
@@ -62,6 +64,8 @@ def orderlist(request):
     return render(request, 'backend/orderlist.html', context)
 @login_required(login_url='backend/login')
 def confirmorderlist(request):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     ordercon=Order.objects.filter(Q(status=2) | Q(status=3) | Q(status=4))
     context={
         'ordercon':ordercon
@@ -70,9 +74,12 @@ def confirmorderlist(request):
     return render(request,'backend/confirmorderlist.html',context)
 @login_required(login_url='backend/login')
 def view_item(request, myid):
+
      sel_ordform = Order.objects.filter(order_id=myid)
      ord = Order.objects.all()
      print(sel_ordform)
+     if not request.user.is_staff:
+         return redirect('backend/login')
      # related_orders = Order.objects.filter(order_id=sel_ordform.order_id)
      context = {
          'ordform': ord,
@@ -82,42 +89,57 @@ def view_item(request, myid):
 
 @login_required(login_url='backend/login')
 def suspend_user(request, catagory_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     order = get_object_or_404(Order, id=catagory_id)
     order.status = 2  # Change status to "confirm"
     order.save()
     return redirect('orderapp:activate_catagory', catagory_id=catagory_id)
 @login_required(login_url='backend/login')
 def cancel(request, catagory_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     order = get_object_or_404(Order, id=catagory_id)
     order.status = 5  # Change status to "cancel"
     order.save()
     return redirect('orderapp:returnrequest', catagory_id=catagory_id)
 @login_required(login_url='backend/login')
 def activate_catagory(request, catagory_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     order = get_object_or_404(Order, id=catagory_id)
     order.status = 3  # Change status to "pickup"
     order.save()
     return redirect('orderapp:deactivate_catagory', catagory_id=catagory_id)
 @login_required(login_url='backend/login')
 def deactivate_catagory(request, catagory_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     order = get_object_or_404(Order, id=catagory_id)
     order.status = 4  # Change status to "delivered"
     order.save()
     return redirect('orderapp:deliver', catagory_id=catagory_id)
 @login_required(login_url='backend/login')
 def deliver(request, catagory_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     order = get_object_or_404(Order, id=catagory_id)
     order.status = 4  # Change status to "delivered"
     order.save()
     return redirect('orderapp:index')  # Redirect to main page after delivery
 @login_required(login_url='backend/login')
 def returnrequest(request, catagory_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
+
     order = get_object_or_404(Order, id=catagory_id)
     order.status = 6  # Change status to "return request"
     order.save()
     return redirect('orderapp/returnaccepted', catagory_id=catagory_id)
 @login_required(login_url='backend/login')
 def returnaccepted(request, catagory_id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     order = get_object_or_404(Order, id=catagory_id)
     order.status = 7  # Change status to "return accepted"
     order.save()
@@ -172,6 +194,8 @@ from rest_framework.decorators import api_view, permission_classes
 
 
 def update_status(request, id):
+    if not request.user.is_staff:
+        return redirect('backend/login')
     if request.method == 'POST':
         selected_status_str = request.POST.get('selected_status')
         try:
