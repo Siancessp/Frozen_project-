@@ -452,3 +452,60 @@ def influencer_change_password(request):
             return redirect('influencer/verify_email')
 
     return render(request, 'backend/influencer_change_password.html')
+
+from order.models import Order
+from django.db.models import Sum
+from django.shortcuts import render
+from datetime import datetime
+from django.db.models import Sum, F
+
+@login_required(login_url='influencer/login')
+def sell_report(request):
+    if not request.user.is_influencer:
+        return redirect('influencer/login')
+
+    influencer_code = request.user.code  # Assuming influencer_code is a field on your CustomUser model
+
+    # Step 1: Fetch all relevant orders
+    all_orders = Order.objects.filter(
+        influencer_code=influencer_code,
+        order_id__isnull=False
+    ).values(
+        'created_at__date', 'order_id', 'total_price'
+    ).order_by('created_at__date', 'order_id')  # Ensure orders are ordered by date and order_id
+
+    # Step 2: Process orders to aggregate total_price for unique order_id per date
+    date_totals = {}
+    seen_orders = set()  # To track which order_ids we have already included
+
+    for order in all_orders:
+        date = order['created_at__date']
+        order_id = order['order_id']
+        total_price = order['total_price']
+
+        if order_id not in seen_orders:
+            if date not in date_totals:
+                date_totals[date] = {
+                    'total_amount': 0,
+                    'order_ids': set(),
+                }
+
+            date_totals[date]['total_amount'] += total_price
+            date_totals[date]['order_ids'].add(order_id)
+            seen_orders.add(order_id)
+
+    # Step 3: Calculate total sum of total_amount across all dates
+    total_sum = sum(data['total_amount'] for data in date_totals.values())
+
+    # Step 4: Convert date_totals dictionary to a list of dictionaries for the template
+    orders_by_influencer_and_date = [
+        {'created_at__date': date, 'total_amount': data['total_amount'], 'order_ids': data['order_ids']}
+        for date, data in sorted(date_totals.items())
+    ]
+
+    context = {
+        'orders_by_influencer_and_date': orders_by_influencer_and_date,
+        'total_sum': total_sum,  # Include total_sum in the context
+    }
+
+    return render(request, 'backend/influ_sell_report.html', context)

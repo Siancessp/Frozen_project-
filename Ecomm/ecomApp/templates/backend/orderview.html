@@ -125,7 +125,15 @@
                     </div>
                     <!-- /input-group -->
                   </div>
+                  <div class="col-lg-6">
+                                     <h5 class="mt-4 mb-2"><b>Influencer's Code</b></h5>
 
+                  {% if sel_ordform.first.influencer_code and sel_ordform.first.order_id %}
+                         <p > {{sel_ordform.first.influencer_code}}  </p >
+                        {% else %}
+                          <p > NA</p>
+                        {% endif %}
+                  </div>
 <!--                  &lt;!&ndash; /.col-lg-6 &ndash;&gt;-->
 <!--                  <div class="col-lg-6">-->
 <!--                   <h5 class="mt-4 mb-2"><b>Product Name</b></h5>-->

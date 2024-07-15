@@ -33,7 +33,7 @@ class Order(models.Model):
     zip_code = models.CharField(max_length=20)
     delivery_time=models.CharField(max_length=50)
     order_item_id=models.CharField(max_length=50)
-
+    influencer_code=models.CharField(max_length=90,null=True)
     dicounted_price=models.CharField(max_length=50)
     walet_value=models.CharField(max_length=50)
     percentage_benefit = models.FloatField(default=0.0)  # Added field for percentage benefit

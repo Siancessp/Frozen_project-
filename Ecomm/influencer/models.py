@@ -34,6 +34,7 @@ class Influencer(AbstractBaseUser, PermissionsMixin):
     code = models.CharField(max_length=50, unique=True)
     status = models.BooleanField(default=True)
     is_influencer = models.BooleanField(default=True)
+    created_date=models.DateField(auto_now_add=True)
 
     # Required fields for AbstractBaseUser
     last_login = models.DateTimeField(default=timezone.now)

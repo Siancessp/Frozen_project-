@@ -275,7 +275,9 @@ def create_order(request):
         state = request.data.get('state', "")
         country = request.data.get('country', "")
         zip_code = request.data.get('zip_code', "")
-        delivery_time = request.data.get('delivery_time', "")
+        delivery_time = request.data.get('delivery_time', ""),
+        influencer_code = request.data.get('influencer_code', "")
+
         try:
             print(user_id)
             # Create order in Razorpay
@@ -297,6 +299,7 @@ def create_order(request):
                     payment_id='',  # Leave payment_id empty initially
                     couponcode=coupon_code,
                     walet_value=walet_value,
+                    influencer_code=influencer_code,
                     # percentage_benefit=max_benefit_percentage,  # Save the percentage benefit
                     pick_up=pick_up,
                     status=1,  # Set initial status

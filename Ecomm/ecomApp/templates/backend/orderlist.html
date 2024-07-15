@@ -48,6 +48,7 @@
 
                         <th>Ordered At</th>
 
+                        <th>Influencer Code</th>
 
                         <th>Total Order Amount</th>
                         <th>Status</th>
@@ -81,7 +82,11 @@
                         {% endif %}
 
                         <td>{{i.created_at}}</td>
-
+ {% if i.influencer_code and i.order_id %}
+                        <td>{{i.influencer_code}}</td>
+                        {% else %}
+                        <td>NA</td>
+                        {% endif %}
 
                         <td>{{i.total_price}}</td>
 

@@ -18,5 +18,6 @@ urlpatterns = [
     path('backend/influencer/verify-otp/', influencer_verify_otp, name='influencer/verify_otp'),
     path('backend/influencer/change-password/', influencer_change_password, name='influencer/change_password'),
 
+    path('backend/influencer/sell_list/', sell_report, name='influencer_sell_list'),
 
 ]
