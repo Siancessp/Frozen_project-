@@ -319,94 +319,118 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from ecomApp.models import  Otp
+from .models import  InfluencerOtp
+import requests
+import random
+from urllib.parse import urlencode
 def generate_otp(length=6):
-    return ''.join(random.choices(string.digits, k=length))
+    # Generate a random OTP of specified length
+    otp = ''.join(random.choices(string.digits, k=length))
+    return otp
+@csrf_exempt
+def sendSMS(apikey, mobile_no,otp):
+    # Generate OTP
+    # otp = random.randint(100000, 999999)
+
+    # Prepare API parameters
+    apikey_encoded = urlencode({'apikey': apikey})
+    mobile = '91' + str(mobile_no)
+    numbers = [mobile]
+    sender = 'FRZWLA'
+    message = f"{otp} is your signin OTP for Frozenwala account. Please apply this within 2min."
+    message_encoded = urlencode({'message': message})
+
+    # Construct the URL
+    url = f"https://api.textlocal.in/send/?{apikey_encoded}&numbers={','.join(numbers)}&sender={sender}&{message_encoded}"
+
+    try:
+        # Send SMS using requests library
+        response = requests.post(url)
+
+        # Check response status
+        if response.status_code == 200:
+            # Assume the session and database operations are handled separately in Django views/models
+            # Example session handling:
+            # request.session['login_mobile_no'] = mobile_no
+
+            # Example database insert (assuming Django ORM usage):
+            # otp_instance = Otp.objects.create(mobile_no=mobile_no, otp=otp, created_date=date.today(), created_time=datetime.now().strftime('%H:%M %p'))
+
+            # Example redirection after successful operation
+            # return redirect('login/verifyotp')
+            print("SMS sent successfully")
+        else:
+            print(f"Failed to send SMS. Status code: {response.status_code}")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error occurred: {str(e)}")
 
 @csrf_exempt
-def sendSMS(apikey, numbers, sender, message):
-    data = urllib.parse.urlencode({'apikey': apikey, 'numbers': numbers, 'message': message, 'sender': sender})
-    data = data.encode('utf-8')
-    request = urllib.request.Request("https://api.textlocal.in/send/?")
-    f = urllib.request.urlopen(request, data)
-    fr = f.read()
-    return fr
-
-@csrf_exempt
-def send_sms(request):
-    if request.method == 'POST':
-        apikey = settings.SMS_API_KEY  # Use your actual API key here
-        sender_name = settings.SMS_SENDER_NAME
-        request_data = json.loads(request.body.decode('utf-8'))
-        recipient_number = request_data.get('phone_number')
-
-
-        otp = generate_otp()
-        message = f'{otp} is your signin OTP for Frozenwala account. Please apply this within 2min.'
-
-        otp_instance, created = Otp.objects.get_or_create(phone_number=recipient_number)
-        otp_instance.otp = otp
-        otp_instance.otp_created_at = timezone.now()
-        otp_instance.save()
-
-        response = sendSMS(apikey, recipient_number, sender_name, message)
-        return JsonResponse({'status': 'success'})
-    else:
-        return JsonResponse({'error': 'Invalid request method'}, status=400)
 def influencer_verify_phone(request):
     if request.method == 'POST':
         phone_number = request.POST.get('phone_number')
         user = Influencer.objects.filter(phone=phone_number, is_influencer=True).first()
+
         if user:
             otp = generate_otp()
-
             message = f'Your OTP for phone number verification is: {otp}'
-            apikey = settings.SMS_API_KEY  # Use your actual API key here
-            sender_name = settings.SMS_SENDER_NAME
-            sendSMS(apikey, phone_number, sender_name, message)
+            apikey = "NGI0ZjQzMzA2MTZjNjc1NDUzNTA3MDQ1NGI1ODczNWE="
+            sender_name = "FRZWLA"
+            # Send OTP via SMS
+            sendSMS(apikey, phone_number,otp)
 
-            otp_obj, created = Otp.objects.get_or_create(user=user)
-            otp_obj.otp = otp
-            otp_obj.otp_created_at = timezone.now()
-            otp_obj.save()
+            # Save OTP to database
+            otp_instance, created = InfluencerOtp.objects.get_or_create(phone_number=phone_number)
+            otp_instance.otp = otp
+            otp_instance.otp_created_at = timezone.now()
+            otp_instance.save()
 
+            # Store verified phone number in session
             request.session['verified_phone'] = phone_number
 
-            return redirect('influencer_verify_otp')
+            return redirect('influencer/verify_otp')
         else:
             error = "Phone number does not exist or user is not authorized."
             return render(request, 'backend/influencer_verify_email.html', {'error': error})
+
     return render(request, 'backend/influencer_verify_email.html')
+
+
 def influencer_verify_otp(request):
     phone_number = request.session.get('verified_phone')
+
     if not phone_number:
         messages.error(request, 'Please verify your phone number first.')
-        return redirect('influencer_verify_phone')
+        return redirect('influencer/verify_email')
 
     if request.method == 'POST':
         otp_entered = request.POST.get('otp')
-        user = Influencer.objects.filter(phone=phone_number).first()
-        if user and user.is_staff:
-            otp_obj = Otp.objects.filter(user=user).first()
-            if otp_obj:
-                if otp_obj.otp == otp_entered:
-                    if (timezone.now() - otp_obj.otp_created_at).total_seconds() > 300:
-                        return render(request, 'backend/influencer_verify_otp.html', {'phone_number': phone_number, 'error': 'OTP has expired. Please request a new OTP.'})
-                    else:
-                        return redirect('influencer_change_password')
+        otp_obj = InfluencerOtp.objects.filter(phone_number=phone_number).first()
+
+        if otp_obj:
+            if otp_obj.otp == otp_entered:
+                if (timezone.now() - otp_obj.otp_created_at).total_seconds() > 300:
+                    return render(request, 'backend/influencer_verify_otp.html',
+                                  {'phone_number': phone_number, 'error': 'OTP has expired. Please request a new OTP.'})
                 else:
-                    return render(request, 'backend/influencer_verify_otp.html', {'phone_number': phone_number, 'error': 'Invalid OTP. Please enter the correct OTP.'})
+                    return redirect('influencer/change_password')
             else:
-                return render(request, 'backend/influencer_verify_otp.html', {'phone_number': phone_number, 'error': 'OTP not found. Please request a new OTP.'})
+                return render(request, 'backend/influencer_verify_otp.html',
+                              {'phone_number': phone_number, 'error': 'Invalid OTP. Please enter the correct OTP.'})
         else:
-            return render(request, 'backend/influencer_verify_otp.html', {'phone_number': phone_number, 'error': 'User not found or unauthorized.'})
+            return render(request, 'backend/influencer_verify_otp.html',
+                          {'phone_number': phone_number, 'error': 'OTP not found. Please request a new OTP.'})
+
     return render(request, 'backend/influencer_verify_otp.html', {'phone_number': phone_number})
+
+
 def influencer_change_password(request):
     if request.method == 'POST':
         phone_number = request.session.get('verified_phone')
+
         if not phone_number:
             messages.error(request, 'Please verify your phone number first.')
-            return redirect('influencer_change_password')
+            return redirect('influencer/verify_email')
 
         new_password = request.POST.get('new_password')
         confirm_password = request.POST.get('confirm_password')
@@ -416,13 +440,15 @@ def influencer_change_password(request):
             return render(request, 'backend/influencer_change_password.html')
 
         user = Influencer.objects.filter(phone=phone_number).first()
+
         if user:
             user.password=new_password
             user.save()
             update_session_auth_hash(request, user)
             messages.success(request, "Password changed successfully.")
-            return redirect('backend/login')
+            return redirect('influencer/login')
         else:
             messages.error(request, "User not found.")
-            return redirect('influencer_verify_phone')
+            return redirect('influencer/verify_email')
+
     return render(request, 'backend/influencer_change_password.html')

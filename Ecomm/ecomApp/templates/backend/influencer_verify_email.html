@@ -91,7 +91,7 @@
      {% if error %}
         <p style="color: red;">{{ error }}</p>
     {% endif %}
-     <form class="login-form" method="post" >
+     <form class="login-form" method="post" action="{% url 'influencer/verify_email' %}">
         {% csrf_token %}
         <div class="form-group">
             <label for="email">Enter your Phone Number:</label><br>

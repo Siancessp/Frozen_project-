@@ -22,6 +22,7 @@ class InfluencerManager(BaseUserManager):
 
 class Influencer(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=255)
+    otp_value = models.CharField(max_length=6, blank=True)
     passbook = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15, unique=True, validators=[UnicodeUsernameValidator()])
@@ -88,3 +89,11 @@ class Influencer(AbstractBaseUser, PermissionsMixin):
         related_name='influencer_user_permissions',  # Adjust related_name to resolve clash
         related_query_name='influencer_user_permission',
     )
+
+
+class InfluencerOtp(models.Model):
+    user = models.ForeignKey(Influencer, on_delete=models.CASCADE,null=True)
+    email_verified = models.BooleanField(default=False)
+    otp = models.CharField(max_length=6, blank=True)
+    otp_created_at = models.DateTimeField(null=True, blank=True)
+    phone_number=models.CharField(max_length=20, blank=True)

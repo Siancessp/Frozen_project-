@@ -491,6 +491,7 @@ def generate_otp(length=6):
 
 @csrf_exempt
 def sendSMS(apikey, numbers, sender, message):
+    print(apikey, numbers, sender, message)
     data = urllib.parse.urlencode({'apikey': apikey, 'numbers': numbers,'message': message, 'sender': sender})
     data = data.encode('utf-8')
     request = urllib.request.Request("https://api.textlocal.in/send/?")
@@ -535,9 +536,11 @@ def send_sms(request):
             otp_instance.otp = otp
             otp_instance.otp_created_at = timezone.now()
             otp_instance.save()
+        print(apikey, recipient_number, sender_name, message)
 
         # Call the send_otp function
-        response = sendSMS(apikey, recipient_number, sender_name, message)
+        sendSMS(apikey, recipient_number, sender_name, message)
+        print(apikey, recipient_number, sender_name, message)
 
         # Return a JSON response
         return JsonResponse({'status': 'success'})
