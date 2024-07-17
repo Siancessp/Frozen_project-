@@ -3,7 +3,10 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import Group, Permission
-
+from order.models import Order
+# from django.core.validators import UnicodeUsernameValidator
+from django.db.models.signals import pre_save, post_save
+from django.dispatch import receiver
 class InfluencerManager(BaseUserManager):
     def create_user(self, email, phone, password=None, **extra_fields):
         if not email:
@@ -98,3 +101,41 @@ class InfluencerOtp(models.Model):
     otp = models.CharField(max_length=6, blank=True)
     otp_created_at = models.DateTimeField(null=True, blank=True)
     phone_number=models.CharField(max_length=20, blank=True)
+
+class InfluencerAmount(models.Model):
+    influencer = models.ForeignKey(Influencer, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    created_date = models.DateTimeField(auto_now_add=True)
+
+@receiver(pre_save, sender=Order)
+def track_payment_id_change(sender, instance, **kwargs):
+    if instance.pk:
+        try:
+            previous = Order.objects.get(pk=instance.pk)
+            instance._previous_payment_id = previous.payment_id
+        except Order.DoesNotExist:
+            instance._previous_payment_id = None
+    else:
+        instance._previous_payment_id = None
+
+@receiver(post_save, sender=Order)
+def send_commission_to_influencer(sender, instance, **kwargs):
+    if instance.influencer_code and instance.payment_id:
+        # Check if payment_id was updated and if no commission has been credited for this order yet
+        if (hasattr(instance, '_previous_payment_id') and
+                instance.payment_id != instance._previous_payment_id):
+            try:
+                influencer = Influencer.objects.get(code=instance.influencer_code)
+                commission_amount = (float(instance.total_price) * float(influencer.commission)) / 100  # assuming commission is a percentage
+
+                # Check if this payment_id has been processed before
+                if not InfluencerAmount.objects.filter(order__payment_id=instance.payment_id).exists():
+                    # Create a new InfluencerAmount record
+                    InfluencerAmount.objects.create(
+                        influencer=influencer,
+                        order=instance,
+                        amount=commission_amount
+                    )
+            except Influencer.DoesNotExist:
+                pass

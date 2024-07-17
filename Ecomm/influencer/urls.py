@@ -19,5 +19,6 @@ urlpatterns = [
     path('backend/influencer/change-password/', influencer_change_password, name='influencer/change_password'),
 
     path('backend/influencer/sell_list/', sell_report, name='influencer_sell_list'),
+    path('backend/influencer/commission-report/', commission_report, name='commission_report'),
 
 ]

@@ -509,3 +509,20 @@ def sell_report(request):
     }
 
     return render(request, 'backend/influ_sell_report.html', context)
+
+from django.shortcuts import render
+from .models import InfluencerAmount
+
+def commission_report(request):
+    # Fetch influencer commission records related to the current user
+    influencer_code = request.user.code
+    influencer_amounts = InfluencerAmount.objects.filter(influencer__code=influencer_code)
+    total_amount = float(influencer_amounts.aggregate(total_amount=Sum('amount'))['total_amount'])
+
+    # Pass data to the template context
+    context = {
+        'commission_records': influencer_amounts,
+        'total_sum' : total_amount
+    }
+
+    return render(request, 'backend/commission_report.html', context)
