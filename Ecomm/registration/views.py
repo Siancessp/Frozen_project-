@@ -1,4 +1,5 @@
 # views.py
+from influencer.models import InfluencerLink
 from django.http import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -126,6 +127,8 @@ class RegistrationView(APIView):
             phone_number = request_data.get('phone_number')
             otp_code = request_data.get('otp_value')
             name = request_data.get('name')
+            influencer_code = request_data.get('influencer_code')
+
 
             try:
                 with transaction.atomic():
@@ -152,6 +155,8 @@ class RegistrationView(APIView):
 
                     # Check for referral benefit
                     self.apply_referral_benefit(request, user)
+
+                    self.apply_influencer_code(request, user)
 
                     # Save user with referral code and wallet value
                     user.save()
@@ -198,6 +203,27 @@ class RegistrationView(APIView):
 
                 # Delete all referral link objects with the same IP address
                 referral_links.delete()
+
+
+
+    def apply_influencer_code(self, request, user):
+        # Get the client's IP address
+        if 'HTTP_X_FORWARDED_FOR' in request.META:
+            ip_address = request.META['HTTP_X_FORWARDED_FOR'].split(',')[0].strip()
+        else:
+            ip_address = request.META.get('REMOTE_ADDR')
+
+        # Check if the IP address exists in the InfluencerLink model
+        influencer_links = InfluencerLink.objects.filter(ip_address=ip_address)
+
+        if influencer_links.exists():
+            influencer_link = influencer_links.first()
+            # Save the influencer_code into the CustomUser's field
+            user.influencer_code = influencer_link.influencer_code
+            user.save()
+
+            # Delete all influencer link objects with the same IP address
+            influencer_links.delete()
 
 
 from rest_framework.permissions import AllowAny

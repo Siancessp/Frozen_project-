@@ -9,7 +9,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ('phone_number',  'otp_value','name')
+        fields = ('phone_number',  'otp_value','name','influencer_code')
 
     def create(self, validated_data):
         # Set the walet attribute to 0.0 in the validated_data dictionary

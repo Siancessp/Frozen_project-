@@ -256,7 +256,7 @@ razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_API_KEY, settings.RAZO
 
 @csrf_exempt
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def create_order(request):
     if request.method == 'POST':
         user_id = request.data.get('user_id')
@@ -277,6 +277,9 @@ def create_order(request):
         zip_code = request.data.get('zip_code', "")
         delivery_time = request.data.get('delivery_time', ""),
         influencer_code = request.data.get('influencer_code', "")
+        user = get_object_or_404(CustomUser, id=user_id)
+        if not influencer_code:
+            influencer_code = user.influencer_code if hasattr(user, 'influencer_code') else ""
 
         try:
             print(user_id)

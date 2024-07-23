@@ -32,6 +32,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_influencer = models.BooleanField(default=False)
     phone_number = models.CharField(max_length=15, unique=True)  # You can adjust the max_length as needed.
     name = models.CharField(max_length=255,null=True)
+    influencer_code = models.CharField(max_length=255,null=True)
+
     registration_id = models.CharField(max_length=255,null=True)
     # otp=models.CharField(max_length=6,null=True)
     bio=models.CharField(max_length=255,default='')

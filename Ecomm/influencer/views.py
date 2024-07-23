@@ -513,7 +513,10 @@ def sell_report(request):
 from django.shortcuts import render
 from .models import InfluencerAmount
 
+@login_required(login_url='influencer/login')
 def commission_report(request):
+    if not request.user.is_influencer:
+        return redirect('influencer/login')
     # Fetch influencer commission records related to the current user
     influencer_code = request.user.code
     influencer_amounts = InfluencerAmount.objects.filter(influencer__code=influencer_code)
@@ -526,3 +529,24 @@ def commission_report(request):
     }
 
     return render(request, 'backend/commission_report.html', context)
+
+from django.http import HttpResponseRedirect
+from rest_framework.views import APIView
+from .models import InfluencerLink
+class InfluViewuu(APIView):
+
+    def get(self, request, *args, **kwargs):
+        influencer_code = request.GET.get('influencer_code')
+
+        # Get the client's IP address
+        if 'HTTP_X_FORWARDED_FOR' in request.META:
+            ip_address = request.META['HTTP_X_FORWARDED_FOR'].split(',')[0].strip()
+        else:
+            ip_address = request.META.get('REMOTE_ADDR')
+
+        if influencer_code:
+            # Log the influencer link click
+            InfluencerLink.objects.get_or_create(influencer_code=influencer_code, ip_address=ip_address)
+
+        # Redirect to your registration or target page
+        return HttpResponseRedirect('/register/')

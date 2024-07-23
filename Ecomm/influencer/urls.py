@@ -1,6 +1,9 @@
 from django.urls import path
 from .views import *
 urlpatterns = [
+
+    path('influencer/frzn/', InfluViewuu.as_view(), name='register'),
+
     path('backend/influencers/', influencer_list, name='influencer_list'),
     path('backend/influencers/add/', add_influencer, name='add_influencer'),
     path('backend/influencers/edit/<int:influencer_id>/', edit_influencer, name='edit_influencer'),

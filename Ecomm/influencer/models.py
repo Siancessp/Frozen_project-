@@ -139,3 +139,12 @@ def send_commission_to_influencer(sender, instance, **kwargs):
                     )
             except Influencer.DoesNotExist:
                 pass
+
+
+class InfluencerLink(models.Model):
+    influencer_code = models.CharField(max_length=20)
+    ip_address = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.influencer_code
